@@ -1,118 +1,126 @@
 <script lang="ts" setup>
 import type { DataTableColumns, FormInst } from 'naive-ui'
-import { NButton, NPopconfirm, NSpace, useMessage } from 'naive-ui'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
 
 import { Add } from '@vicons/ionicons5'
 import { cloudApi } from '~/composables/cloud'
-import type { Category } from '~/types/api'
-import { dateFns } from '~/composables'
+import type { Say } from '~/types/api'
+import { dateFns, emptyValue } from '~/composables'
 
-const message = useMessage()
-const categories = ref<Array<Category>>([])
+const says = ref<Array<Say>>([])
 const loadding = ref(true)
 const pagination = reactive({ pageSize: 20 })
+const message = useMessage()
 const showModal = ref(false)
 const formInstRef = ref<FormInst | null>(null)
 
-const categoryForm = reactive({
+const sayForm = reactive({
   id: '',
-  name: '',
-  value: '',
-  state: 0,
+  content: '',
+  author: '',
+  origin: '',
 })
 
-const getCategories = async () => {
-  const res = await cloudApi.invokeFunction('get-categories', {})
-  categories.value = res.data
+const getSays = async () => {
+  loadding.value = true
+  const res = await cloudApi.invokeFunction('get-says', {})
+  says.value = res.data
   loadding.value = false
 }
-getCategories()
+getSays()
 
-const rowKey = (row: Category) => row._id
+const rowKey = (row: Say) => row._id
 
-const handleDelete = async (row: Category) => {
-  const res = await cloudApi.invokeFunction('delete-data', { col: 'categories', id: row._id })
+const handleDelete = async (row: Say) => {
+  const res = await cloudApi.invokeFunction('delete-data', { id: row._id, col: 'says' })
   if (res.code === 200) {
     message.success('删除成功')
-    getCategories()
+    getSays()
   }
-  else { message.error(res.msg) }
+  else { message.error('删除失败') }
 }
-const handleEdit = (row: Category) => {
-  categoryForm.id = row._id!
-  categoryForm.name = row.name
-  categoryForm.value = row.value
-  showModal.value = true
-}
+
 const onPositiveClick = async () => {
   formInstRef.value?.validate(async (errors) => {
     if (errors) {
       message.error('还有未填项')
     }
     else {
-      if (categoryForm.id) {
-        const res = await cloudApi.invokeFunction('update-category', categoryForm)
+      if (sayForm.id) {
+        const res = await cloudApi.invokeFunction('update-say', sayForm)
         if (res.code === 200) {
-          categoryForm.id = ''
-          categoryForm.name = ''
-          categoryForm.value = ''
+          sayForm.id = ''
+          sayForm.content = ''
+          sayForm.author = ''
+          sayForm.origin = ''
           message.success('修改成功')
           showModal.value = false
-          getCategories()
+          getSays()
         }
       }
       else {
-        const res = await cloudApi.invokeFunction('add-category', categoryForm)
+        const res = await cloudApi.invokeFunction('add-say', sayForm)
         if (res.code === 200) {
-          categoryForm.name = ''
-          categoryForm.value = ''
+          sayForm.id = ''
+          sayForm.content = ''
+          sayForm.author = ''
+          sayForm.origin = ''
           message.success('添加成功')
           showModal.value = false
-          getCategories()
+          getSays()
         }
       }
     }
   })
   return false
 }
-
+const rules = {
+  content: {
+    required: true,
+    min: 4,
+    message: '至少输入4个字符',
+  },
+  author: {
+    required: true,
+    min: 1,
+    message: '至少输入一个字符',
+  },
+}
+const handleEdit = (row: Say) => {
+  sayForm.id = row._id!
+  sayForm.origin = row.origin!
+  sayForm.author = row.author!
+  sayForm.content = row.content!
+  showModal.value = true
+}
 const onNegativeClick = () => {
-  categoryForm.id = ''
-  categoryForm.name = ''
-  categoryForm.value = ''
+  sayForm.id = ''
+  sayForm.content = ''
+  sayForm.author = ''
+  sayForm.origin = ''
   showModal.value = false
 }
-const rules = {
-  name: {
-    key: 'a',
-    required: true,
-    min: 1,
-    message: '至少输入一个字符',
-  },
-  value: {
-    required: true,
-    min: 1,
-    message: '至少输入一个字符',
-  },
-}
-const createColumns = (): DataTableColumns<Category> => [
+const createColumns = (): DataTableColumns<Say> => [
   {
     type: 'selection',
   },
   {
-    title: '名称',
-    key: 'name',
-    width: 80,
+    title: '内容',
+    key: 'content',
+    width: 200,
+    ellipsis: true,
   },
   {
-    title: 'value',
-    key: 'value',
+    title: '作者',
+    key: 'category',
     width: 80,
+    render: row => emptyValue(row.author),
   },
   {
-    title: '文章数',
-    key: 'count',
-    width: 80,
+    title: '来源',
+    key: 'label',
+    width: 100,
+    render: row => emptyValue(row.origin),
   },
   {
     title: '创建于',
@@ -179,7 +187,7 @@ const createColumns = (): DataTableColumns<Category> => [
   <div>
     <div pb-4 text-xl flex justify-between>
       <div>
-        博文·标签/分类
+        说说 · 管理/添加
       </div>
       <div>
         <!-- 添加按钮 -->
@@ -194,19 +202,22 @@ const createColumns = (): DataTableColumns<Category> => [
       v-model:show="showModal"
       :mask-closable="false"
       preset="dialog"
-      title="编辑分类"
+      title="编辑说说"
       positive-text="完成"
       negative-text="取消"
       @positive-click="onPositiveClick"
       @negative-click="onNegativeClick"
       @after-leave="onNegativeClick"
     >
-      <n-form ref="formInstRef" :model="categoryForm" :rules="rules">
-        <n-form-item label="分类名称" required path="name">
-          <n-input v-model:value="categoryForm.name" type="text" placeholder="取个名字吧" />
+      <n-form ref="formInstRef" :model="sayForm" :rules="rules">
+        <n-form-item label="作者" required path="author">
+          <n-input v-model:value="sayForm.author" type="text" placeholder="谁说的呢" />
         </n-form-item>
-        <n-form-item label="value" required path="value">
-          <n-input v-model:value="categoryForm.value" type="text" placeholder="名字拼音或英文" />
+        <n-form-item label="来源" path="origin">
+          <n-input v-model:value="sayForm.origin" type="text" placeholder="出自哪里呢" />
+        </n-form-item>
+        <n-form-item label="内容" required path="content">
+          <n-input v-model:value="sayForm.content" type="text" placeholder="说了点什么" />
         </n-form-item>
       </n-form>
     </n-modal>
@@ -214,7 +225,7 @@ const createColumns = (): DataTableColumns<Category> => [
       remote
       size="small"
       :columns="createColumns()"
-      :data="categories"
+      :data="says"
       :pagination="pagination"
       :row-key="rowKey"
       :loading="loadding"

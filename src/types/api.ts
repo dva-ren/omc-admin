@@ -5,17 +5,37 @@ export interface ArticleForm {
   category: Category
   label?: string[]
   cover?: string
-}
-export interface Category {
-  _id?: string
-  name: string
-  category: string
+  topping: boolean
+  allowComment: boolean
 }
 
 export interface Article extends ArticleForm {
-  createTime: string
-  updateTime: string
+  createTime: string | Date
+  updateTime?: string | Date
   state: 0 | 1 | 2
+}
+
+export interface Category {
+  _id?: string
+  name: string
+  value: string
+  count?: number
+  createTime?: string | Date
+  updateTime?: string | Date
+}
+export interface Note {
+  _id?: string
+  title: string
+  content: string
+  mood: string
+  weather: string
+  position: string
+  allowComment: boolean
+  state: 0 | 1 | 2
+  topping: boolean
+  publishTime?: string | Date
+  createTime: string | Date
+  updateTime?: string | Date
 }
 
 export interface LoginForm {
@@ -48,8 +68,8 @@ export interface Picture {
   url: string
   labels: string[]
   description?: string
-  createTime?: string
-  updateTime?: string
+  createTime?: string | Date
+  updateTime?: string | Date
   state?: number
 }
 
@@ -66,7 +86,9 @@ export interface PictureMessage {
 export interface Say {
   _id: string
   content: string
-  from?: string
+  origin?: string
   author?: string
-  createTime: string
+  state?: number
+  createTime?: string
+  updateTime?: string
 }

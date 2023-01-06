@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NText } from 'naive-ui'
+import { NButton, NPopconfirm, NText } from 'naive-ui'
+
 import { RouterLink } from 'vue-router'
 import { cloudApi } from '~/composables/cloud'
 import type { Article } from '~/types/api'
-import { dateFns } from '~/composables'
+import { dateFns, emptyValue } from '~/composables'
 
 const articles = ref<Array<Article>>([])
 const loadding = ref(true)
-const pagination = reactive({ pageSize: 10 })
+const pagination = reactive({ pageSize: 20 })
+const message = useMessage()
 
 const getArticles = async () => {
   const res = await cloudApi.invokeFunction('get-article', {})
@@ -19,19 +21,18 @@ getArticles()
 
 const rowKey = (row: Article) => row._id
 
-const handleDelete = (row: Article) => {
-
+const handleDelete = async (row: Article, state: number) => {
+  const res = await cloudApi.invokeFunction('delete-data', { id: row._id, col: 'article' })
+  if (res.code === 200) {
+    message.success('删除成功')
+    getArticles()
+  }
+  else { message.error('删除失败') }
 }
 const createColumns = (): DataTableColumns<Article> => [
   {
     type: 'selection',
   },
-  // {
-  //   title: 'id',
-  //   key: '_id',
-  //   width: 80,
-  //   ellipsis: true,
-  // },
   {
     title: '标题',
     key: 'title',
@@ -51,17 +52,17 @@ const createColumns = (): DataTableColumns<Article> => [
       )
     },
   },
-
   {
     title: '分类',
     key: 'category',
     width: 80,
-    render: (row, index) => row.category.name,
+    render: row => emptyValue(row.category.name),
   },
   {
     title: '标签',
     key: 'label',
     width: 100,
+    render: row => row.label || [],
   },
   {
     title: '创建于',
@@ -73,25 +74,50 @@ const createColumns = (): DataTableColumns<Article> => [
     title: '最后修改',
     width: 100,
     key: 'updateTime',
-    render: row => dateFns(row.updateTime).fromNow(),
+    render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
   },
   {
-    title: 'Action',
+    title: '操作',
     key: 'actions',
     fixed: 'right',
     width: 60,
     render(row) {
-      return h(
-        NButton,
-        {
-          strong: true,
-          secondary: true,
-          size: 'small',
-          onClick: () => handleDelete(row),
-          type: 'error',
-        },
-        { default: () => '删除' },
-      )
+      if (row.state === 0) {
+        return h(
+          NPopconfirm,
+          {
+            onPositiveClick: () => handleDelete(row, 1),
+          },
+          {
+            default: () => '确认删除吗?',
+            trigger: () => {
+              return h(
+                NButton,
+                {
+                  strong: true,
+                  secondary: true,
+                  size: 'tiny',
+                  type: 'error',
+                },
+                { default: () => '删除' },
+              )
+            },
+          },
+        )
+      }
+      else {
+        return h(
+          NButton,
+          {
+            strong: true,
+            secondary: true,
+            size: 'tiny',
+            type: 'info',
+            onClick: () => handleDelete(row, 0),
+          },
+          { default: () => '恢复' },
+        )
+      }
     },
   },
 ]
@@ -116,13 +142,3 @@ const createColumns = (): DataTableColumns<Article> => [
     />
   </div>
 </template>
-
-<style scoped>
-:deep(.link){
-  transition: color .1s;
-  color: rgba(24,160,88,0.8);
-}
-:deep(.link:hover){
-  color: rgba(24,160,88,1);
-}
-</style>

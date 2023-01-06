@@ -106,48 +106,50 @@ const menuOptions: MenuOption[] = [
     label: '说说',
     key: 'says',
     icon: renderIcon(Message2),
-    children: [
-      {
-        label: '管理',
-        key: 'says manage',
-        href: '/says/view',
-        icon: renderIcon(EyeSharp),
-      },
-      {
-        label: '撰写',
-        key: 'says write',
-        href: '/says/write',
-        icon: renderIcon(Pencil),
-      },
-    ],
+    href: '/says',
   },
 ]
 </script>
 
 <template>
-  <main h-full>
-    <n-layout has-sider h-full>
-      <n-layout-sider
-        bordered
-        collapse-mode="width"
-        :collapsed-width="64"
-        :width="240"
-        :collapsed="collapsed"
-        show-trigger
-        @collapse="collapsed = true"
-        @expand="collapsed = false"
-      >
-        <n-menu
-          :collapsed="collapsed"
+  <n-message-provider>
+    <main h-full>
+      <n-layout has-sider h-full>
+        <n-layout-sider
+          bordered
+          collapse-mode="width"
           :collapsed-width="64"
-          :collapsed-icon-size="22"
-          :options="menuOptions"
-          :render-label="renderMenuLabel"
-        />
-      </n-layout-sider>
-      <n-layout py-4 px-1 sm:p-10>
-        <RouterView />
+          :width="240"
+          :collapsed="collapsed"
+          show-trigger
+          @collapse="collapsed = true"
+          @expand="collapsed = false"
+        >
+          <n-menu
+            :collapsed="collapsed"
+            :collapsed-width="64"
+            :collapsed-icon-size="22"
+            :options="menuOptions"
+            :render-label="renderMenuLabel"
+          />
+        </n-layout-sider>
+        <n-layout py-4 px-1 sm:p-10>
+          <RouterView />
+        </n-layout>
       </n-layout>
-    </n-layout>
-  </main>
+    </main>
+  </n-message-provider>
 </template>
+
+<style scoped>
+:deep(.link){
+  transition: color .1s;
+  color: rgba(24,160,88,0.8);
+}
+:deep(.link:hover){
+  color: rgba(24,160,88,1);
+}
+:deep(.table-row){
+  font-size: 13px;
+}
+</style>

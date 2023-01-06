@@ -1,28 +1,37 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NText } from 'naive-ui'
+import { NButton, NPopconfirm } from 'naive-ui'
 import { RouterLink } from 'vue-router'
 import { cloudApi } from '~/composables/cloud'
-import type { Article } from '~/types/api'
-import { dateFns } from '~/composables'
+import type { Note } from '~/types/api'
+import { dateFns, emptyValue } from '~/composables'
 
-const notes = ref<Array<Article>>([])
+const notes = ref<Array<Note>>([])
 const loadding = ref(true)
-const pagination = reactive({ pageSize: 10 })
+const pagination = reactive({ pageSize: 20 })
+const message = useMessage()
 
 const getArticles = async () => {
+  loadding.value = true
   const res = await cloudApi.invokeFunction('get-notes', {})
   notes.value = res.data
   loadding.value = false
 }
 getArticles()
 
-const rowKey = (row: Article) => row._id
+const rowKey = (row: Note) => row._id
 
-const handleDelete = (row: Article) => {
-
+const handleDelete = async (row: Note) => {
+  const res = await cloudApi.invokeFunction('delete-data', { col: 'notes', id: row._id })
+  if (res.code === 200) {
+    message.success('删除成功')
+    getArticles()
+  }
+  else {
+    message.error('未知错误，删除失败')
+  }
 }
-const createColumns = (): DataTableColumns<Article> => [
+const createColumns = (): DataTableColumns<Note> => [
   {
     type: 'selection',
   },
@@ -53,15 +62,22 @@ const createColumns = (): DataTableColumns<Article> => [
   },
 
   {
-    title: '分类',
-    key: 'category',
+    title: '心情',
+    key: 'mood',
     width: 80,
-    render: (row, index) => row.category.name,
+    render: row => emptyValue(row.mood),
   },
   {
-    title: '标签',
-    key: 'label',
+    title: '天气',
+    key: 'weather',
     width: 100,
+    render: row => emptyValue(row.weather),
+  },
+  {
+    title: '位置',
+    key: 'position',
+    width: 100,
+    render: row => emptyValue(row.position),
   },
   {
     title: '创建于',
@@ -73,25 +89,50 @@ const createColumns = (): DataTableColumns<Article> => [
     title: '最后修改',
     width: 100,
     key: 'updateTime',
-    render: row => dateFns(row.updateTime).fromNow(),
+    render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
   },
   {
-    title: 'Action',
+    title: '操作',
     key: 'actions',
     fixed: 'right',
     width: 60,
     render(row) {
-      return h(
-        NButton,
-        {
-          strong: true,
-          secondary: true,
-          size: 'small',
-          onClick: () => handleDelete(row),
-          type: 'error',
-        },
-        { default: () => '删除' },
-      )
+      if (row.state === 0) {
+        return h(
+          NPopconfirm,
+          {
+            onPositiveClick: () => handleDelete(row, 1),
+          },
+          {
+            default: () => '确认删除吗?',
+            trigger: () => {
+              return h(
+                NButton,
+                {
+                  strong: true,
+                  secondary: true,
+                  size: 'tiny',
+                  type: 'error',
+                },
+                { default: () => '删除' },
+              )
+            },
+          },
+        )
+      }
+      else {
+        return h(
+          NButton,
+          {
+            strong: true,
+            secondary: true,
+            size: 'tiny',
+            type: 'info',
+            onClick: () => handleDelete(row, 0),
+          },
+          { default: () => '恢复' },
+        )
+      }
     },
   },
 ]
