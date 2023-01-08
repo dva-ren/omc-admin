@@ -8,3 +8,7 @@ dayjs.locale('zh-cn') // 使用本地化语言
 dayjs.extend(relativeTime)
 
 export const dateFns = dayjs
+
+export function formateDate(date: Date | string) {
+  return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+}

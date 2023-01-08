@@ -2,8 +2,9 @@
 import type { DataTableColumns } from 'naive-ui'
 import { NButton, NPopconfirm } from 'naive-ui'
 import { RouterLink } from 'vue-router'
-import { cloudApi } from '~/composables/cloud'
-import type { Note } from '~/types/api'
+import { deleteNote, queryNoteList } from '~/api'
+
+import type { Note } from '~/types'
 import { dateFns, emptyValue } from '~/composables'
 
 const notes = ref<Array<Note>>([])
@@ -13,16 +14,17 @@ const message = useMessage()
 
 const getArticles = async () => {
   loadding.value = true
-  const res = await cloudApi.invokeFunction('get-notes', {})
-  notes.value = res.data
+  const res = await queryNoteList()
+  notes.value = res.data.list
+  // console.log(res)
   loadding.value = false
 }
 getArticles()
 
-const rowKey = (row: Note) => row._id
+const rowKey = (row: Note) => row.id
 
 const handleDelete = async (row: Note) => {
-  const res = await cloudApi.invokeFunction('delete-data', { col: 'notes', id: row._id })
+  const res = await deleteNote(row.id)
   if (res.code === 200) {
     message.success('删除成功')
     getArticles()
@@ -52,7 +54,7 @@ const createColumns = (): DataTableColumns<Note> => [
         {
           to: {
             path: '/notes/write',
-            query: { id: row._id },
+            query: { id: row.id },
           },
           class: 'link',
         },
@@ -97,11 +99,11 @@ const createColumns = (): DataTableColumns<Note> => [
     fixed: 'right',
     width: 60,
     render(row) {
-      if (row.state === 0) {
+      if (row.status === 0) {
         return h(
           NPopconfirm,
           {
-            onPositiveClick: () => handleDelete(row, 1),
+            onPositiveClick: () => handleDelete(row),
           },
           {
             default: () => '确认删除吗?',
@@ -128,7 +130,7 @@ const createColumns = (): DataTableColumns<Note> => [
             secondary: true,
             size: 'tiny',
             type: 'info',
-            onClick: () => handleDelete(row, 0),
+            onClick: () => handleDelete(row),
           },
           { default: () => '恢复' },
         )

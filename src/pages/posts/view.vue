@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NPopconfirm, NText } from 'naive-ui'
+import { NButton, NPopconfirm } from 'naive-ui'
 
 import { RouterLink } from 'vue-router'
-import { cloudApi } from '~/composables/cloud'
-import type { Article } from '~/types/api'
+import type { Article } from '~/types'
 import { dateFns, emptyValue } from '~/composables'
+import { deleteArticle, queryArticleList } from '~/api'
 
 const articles = ref<Array<Article>>([])
 const loadding = ref(true)
@@ -13,16 +13,16 @@ const pagination = reactive({ pageSize: 20 })
 const message = useMessage()
 
 const getArticles = async () => {
-  const res = await cloudApi.invokeFunction('get-article', {})
-  articles.value = res.data
+  const res = await queryArticleList()
+  articles.value = res.data.list
   loadding.value = false
 }
 getArticles()
 
-const rowKey = (row: Article) => row._id
+const rowKey = (row: Article) => row.id
 
 const handleDelete = async (row: Article, state: number) => {
-  const res = await cloudApi.invokeFunction('delete-data', { id: row._id, col: 'article' })
+  const res = await deleteArticle(row.id)
   if (res.code === 200) {
     message.success('删除成功')
     getArticles()
@@ -44,7 +44,7 @@ const createColumns = (): DataTableColumns<Article> => [
         {
           to: {
             path: '/posts/write',
-            query: { id: row._id },
+            query: { id: row.id },
           },
           class: 'link',
         },
@@ -56,7 +56,7 @@ const createColumns = (): DataTableColumns<Article> => [
     title: '分类',
     key: 'category',
     width: 80,
-    render: row => emptyValue(row.category.name),
+    render: row => emptyValue(row.categoryName),
   },
   {
     title: '标签',
@@ -82,7 +82,7 @@ const createColumns = (): DataTableColumns<Article> => [
     fixed: 'right',
     width: 60,
     render(row) {
-      if (row.state === 0) {
+      if (row.status === 0) {
         return h(
           NPopconfirm,
           {

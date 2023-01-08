@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import type { DataTableColumns, FormInst } from 'naive-ui'
 import { NButton, NPopconfirm, NSpace } from 'naive-ui'
-
 import { Add } from '@vicons/ionicons5'
-import { cloudApi } from '~/composables/cloud'
-import type { Say } from '~/types/api'
+import { addSay, deleteSay, querySay, querySayList, updateSay } from '~/api'
+
+import type { Say } from '~/types'
 import { dateFns, emptyValue } from '~/composables'
 
 const says = ref<Array<Say>>([])
@@ -23,16 +23,16 @@ const sayForm = reactive({
 
 const getSays = async () => {
   loadding.value = true
-  const res = await cloudApi.invokeFunction('get-says', {})
-  says.value = res.data
+  const res = await querySayList()
+  says.value = res.data.list
   loadding.value = false
 }
 getSays()
 
-const rowKey = (row: Say) => row._id
+const rowKey = (row: Say) => row.id
 
 const handleDelete = async (row: Say) => {
-  const res = await cloudApi.invokeFunction('delete-data', { id: row._id, col: 'says' })
+  const res = await deleteSay(row.id)
   if (res.code === 200) {
     message.success('删除成功')
     getSays()
@@ -47,7 +47,7 @@ const onPositiveClick = async () => {
     }
     else {
       if (sayForm.id) {
-        const res = await cloudApi.invokeFunction('update-say', sayForm)
+        const res = await updateSay(sayForm.id, sayForm)
         if (res.code === 200) {
           sayForm.id = ''
           sayForm.content = ''
@@ -59,7 +59,7 @@ const onPositiveClick = async () => {
         }
       }
       else {
-        const res = await cloudApi.invokeFunction('add-say', sayForm)
+        const res = await addSay(sayForm)
         if (res.code === 200) {
           sayForm.id = ''
           sayForm.content = ''
@@ -87,10 +87,10 @@ const rules = {
   },
 }
 const handleEdit = (row: Say) => {
-  sayForm.id = row._id!
-  sayForm.origin = row.origin!
-  sayForm.author = row.author!
-  sayForm.content = row.content!
+  sayForm.id = row.id
+  sayForm.origin = row.origin
+  sayForm.author = row.author
+  sayForm.content = row.content
   showModal.value = true
 }
 const onNegativeClick = () => {
@@ -187,7 +187,7 @@ const createColumns = (): DataTableColumns<Say> => [
   <div>
     <div pb-4 text-xl flex justify-between>
       <div>
-        说说 · 管理/添加
+        说点什么
       </div>
       <div>
         <!-- 添加按钮 -->
@@ -202,7 +202,7 @@ const createColumns = (): DataTableColumns<Say> => [
       v-model:show="showModal"
       :mask-closable="false"
       preset="dialog"
-      title="编辑说说"
+      title="编辑"
       positive-text="完成"
       negative-text="取消"
       @positive-click="onPositiveClick"
@@ -217,7 +217,7 @@ const createColumns = (): DataTableColumns<Say> => [
           <n-input v-model:value="sayForm.origin" type="text" placeholder="出自哪里呢" />
         </n-form-item>
         <n-form-item label="内容" required path="content">
-          <n-input v-model:value="sayForm.content" type="text" placeholder="说了点什么" />
+          <n-input v-model:value="sayForm.content" type="textarea" placeholder="说了点什么" />
         </n-form-item>
       </n-form>
     </n-modal>

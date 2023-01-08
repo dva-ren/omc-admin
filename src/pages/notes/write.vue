@@ -1,14 +1,18 @@
 <script lang="ts" setup>
 import { PaperPlane, SettingsOutline } from '@vicons/ionicons5'
 import { useMessage } from 'naive-ui'
-import { cloudApi } from '~/composables'
-import type { Note } from '~/types/api'
+
+import { addNote, queryNote, updateNote } from '~/api'
 
 const route = useRoute()
-const id = computed(() => route.query.id)
+const id = computed(() => route.query.id as string)
 const show = ref(false)
 const active = ref(false)
-const customCreateTime = ref(null)
+const customCreateTime = reactive({
+  flag: false,
+  value: Date.now(),
+  publishTime: null,
+})
 const message = useMessage()
 
 const noteForm = ref({
@@ -17,16 +21,17 @@ const noteForm = ref({
   mood: undefined,
   weather: undefined,
   position: undefined,
-  topping: false,
-  allowComment: false,
-  state: 0,
+  isTop: 0,
+  allowComment: 1,
+  status: 0,
   publishTime: undefined,
+  createTime: undefined,
 })
 
 const getArticle = async () => {
   if (id.value) {
     show.value = true
-    const res = await cloudApi.invokeFunction('get-note', { id: id.value })
+    const res = await queryNote(id.value)
     noteForm.value = res.data
     show.value = false
   }
@@ -100,17 +105,18 @@ const handleCreate = (value: string) => {
   }
 }
 const handleAdd = async () => {
+  console.log(customCreateTime.value)
   if (!noteForm.value.title || !noteForm.value.content) {
     message.error('请输入标题和内容')
     return
   }
   if (id.value) {
-    const res = await cloudApi.invokeFunction('update-note', unref(noteForm))
+    const res = await updateNote(id.value, { ...unref(noteForm), createTime: customCreateTime.flag ? customCreateTime.value : undefined })
     if (res.code === 200)
       message.success('修改成功')
   }
   else {
-    const res = await cloudApi.invokeFunction('add-note', unref(noteForm))
+    const res = await addNote({ ...unref(noteForm), createTime: customCreateTime.flag ? customCreateTime.value : undefined })
     if (res.code === 200)
       message.success('添加成功')
   }
@@ -126,10 +132,11 @@ watch(id, () => {
       mood: undefined,
       weather: undefined,
       position: undefined,
-      topping: false,
-      allowComment: false,
-      state: 0,
+      isTop: 0,
+      allowComment: 1,
+      status: 0,
       publishTime: undefined,
+      createTime: undefined,
     }
   }
 }, { immediate: true })
@@ -206,21 +213,27 @@ watch(id, () => {
               @create="handleCreate"
             />
           </n-form-item>
-          <n-form-item label="置顶" path="state">
-            <n-switch v-model:value="noteForm.state" />
+          <n-form-item label="置顶" path="isTop">
+            <n-switch v-model:value="noteForm.isTop" :checked-value="1" :unchecked-value="0" />
+          </n-form-item>
+          <n-form-item label="位置" path="position">
+            <n-input v-model:value="noteForm.position" type="text" placeholder="选个位置" />
           </n-form-item>
           <n-form-item label="公开时间" path="publishTime">
             <n-date-picker
-              v-model:value="noteForm.publishTime"
+              v-model:value="customCreateTime.publishTime"
               type="datetime"
             />
           </n-form-item>
           <n-form-item label="允许评论" path="allowComment">
-            <n-switch v-model:value="noteForm.allowComment" />
+            <n-switch v-model:value="noteForm.allowComment" :checked-value="1" :unchecked-value="0" />
           </n-form-item>
-          <n-form-item label="自定义创建时间" path="createTime">
+          <n-form-item label="自定义创建时间" path="customCreateTime">
+            <n-switch v-model:value="customCreateTime.flag" :checked-value="1" :unchecked-value="0" />
             <n-date-picker
-              v-model:value="customCreateTime"
+              v-if="customCreateTime.flag"
+              v-model:value="customCreateTime.value"
+              pl-2
               type="datetime"
             />
           </n-form-item>

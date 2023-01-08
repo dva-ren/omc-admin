@@ -1,82 +1,73 @@
 <script lang="ts" setup>
 import { PaperPlane, SettingsOutline } from '@vicons/ionicons5'
-import { cloudApi } from '~/composables'
-import type { Article, Category } from '~/types/api'
+import type { Article, Category } from '~/types'
+import { addArticle, queryArticle, queryCategoryList, updateArticle } from '~/api'
 
 const route = useRoute()
-const id = computed(() => route.query.id)
+const id = computed(() => route.query.id as string)
 const show = ref(false)
 const active = ref(false)
-const customCreateTime = ref(null)
 const showModal = ref(false)
 const previewFileList: any = []
 const previewImageUrl = ''
-let categories: Category[] = []
-const category = ref()
 const message = useMessage()
-
-const articleForm = ref<Article>({
+const customCreateTime = reactive({
+  flag: false,
+  value: Date.now(),
+  publishTime: null,
+})
+const initValue = {
   title: '',
   content: '',
   label: [],
-  category: {
-    name: '',
-    value: '',
-  },
-  topping: false,
-  allowComment: true,
-  createTime: new Date(),
-  state: 0,
-
-})
+  categoryId: undefined,
+  isTop: 0,
+  allowComment: 1,
+  createTime: undefined,
+  status: 0,
+}
+const articleForm = ref(initValue)
 const rowData = ref<Article>()
 
-const categoryOptions = ref([])
-const handleCategoryChange = (value: string) => {
-  const c = categories.find(i => i.value === value)
-  if (!c)
-    return
-  articleForm.value.category = {
-    _id: c._id!,
-    name: c.name!,
-    value: c.value!,
-  }
-}
+const categoryOptions = ref<Array<{ label: string; value: string }>>([])
+
 const getArticle = async () => {
   if (id.value) {
     show.value = true
-    const res = await cloudApi.invokeFunction('query-article', { id: id.value })
+    const res = await queryArticle(id.value)
     articleForm.value = res.data
-    category.value = res.data.category.value
-    rowData.value = res.data
     show.value = false
   }
 }
 const getCategory = async () => {
-  const res = await cloudApi.invokeFunction('get-categories', {})
-  categories = res.data
-  categoryOptions.value = res.data.map((c: Category) => ({ label: c.name, value: c.value }))
+  const res = await queryCategoryList()
+  categoryOptions.value = res.data.map(c => ({ label: c.name, value: c.id }))
 }
 const handleAdd = async () => {
-  const { title, content } = articleForm.value
-  if (!title || !content || !category.value) {
+  const { title, content, categoryId } = articleForm.value
+  if (!title || !content || !categoryId) {
     message.error('还有未填项')
     return
   }
+  const form = unref(articleForm)
+  if (customCreateTime.flag)
+    form.createTime = customCreateTime.value
+  form.label = form.label ? JSON.stringify(form.label) : ''
   if (id.value) {
-    const res = await cloudApi.invokeFunction('update-article', unref(articleForm))
+    const res = await updateArticle(id.value, form)
     if (res.code === 200)
       message.success('修改成功')
     else
       message.error(res.msg)
   }
   else {
-    const res = await cloudApi.invokeFunction('add-article', unref(articleForm))
+    const res = await addArticle(form)
     if (res.code === 200)
       message.success('添加成功')
     else
       message.error(res.msg)
   }
+  articleForm.value = initValue
 }
 watch(id, () => {
   if (id.value) {
@@ -87,15 +78,11 @@ watch(id, () => {
       title: '',
       content: '',
       label: [],
-      category: {
-        name: '',
-        value: '',
-      },
-      topping: false,
-      allowComment: true,
-      createTime: new Date(),
-      state: 0,
-
+      categoryId: undefined,
+      isTop: 0,
+      allowComment: 0,
+      createTime: undefined,
+      status: 0,
     }
     getCategory()
   }
@@ -151,30 +138,32 @@ watch(id, () => {
             maxWidth: '420px',
           }"
         >
-          <n-form-item label="分类" path="category" required>
+          <n-form-item label="分类" path="categoryId" required>
             <n-select
-              v-model:value="category"
+              v-model:value="articleForm.categoryId"
               :options="categoryOptions"
               placeholder="选择分类"
-              @update-value="handleCategoryChange"
             />
           </n-form-item>
           <n-form-item label="发布状态" path="state" required>
             <n-select
-              v-model:value="articleForm.state"
+              v-model:value="articleForm.status"
               :options="[{ label: '正常发布', value: 0 }, { label: '删除', value: 1 }, { label: '草稿', value: 2 }]"
               placeholder="状态"
             />
           </n-form-item>
-          <n-form-item label="置顶" path="topping">
-            <n-switch v-model:value="articleForm.topping" />
+          <n-form-item label="置顶" path="isTop">
+            <n-switch v-model:value="articleForm.isTop" :checked-value="1" :unchecked-value="0" />
           </n-form-item>
           <n-form-item label="允许评论" path="allowComment">
-            <n-switch v-model:value="articleForm.allowComment" />
+            <n-switch v-model:value="articleForm.allowComment" :checked-value="1" :unchecked-value="0" />
           </n-form-item>
-          <n-form-item label="自定义创建时间" path="createTime">
+          <n-form-item label="自定义创建时间" path="customCreateTime">
+            <n-switch v-model:value="customCreateTime.flag" :checked-value="1" :unchecked-value="0" />
             <n-date-picker
-              v-model:value="customCreateTime"
+              v-if="customCreateTime.flag"
+              v-model:value="customCreateTime.value"
+              pl-2
               type="datetime"
             />
           </n-form-item>

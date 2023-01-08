@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import type { DataTableColumns, FormInst } from 'naive-ui'
 import { NButton, NPopconfirm, NSpace, useMessage } from 'naive-ui'
-
 import { Add } from '@vicons/ionicons5'
-import { cloudApi } from '~/composables/cloud'
-import type { Category } from '~/types/api'
+import { addCategory, deleteCategory, queryCategoryList, updateCategory } from '~/api'
+import type { Category } from '~/types'
 import { dateFns } from '~/composables'
 
 const message = useMessage()
@@ -17,21 +16,20 @@ const formInstRef = ref<FormInst | null>(null)
 const categoryForm = reactive({
   id: '',
   name: '',
-  value: '',
-  state: 0,
+  description: '',
 })
 
 const getCategories = async () => {
-  const res = await cloudApi.invokeFunction('get-categories', {})
+  const res = await queryCategoryList()
   categories.value = res.data
   loadding.value = false
 }
 getCategories()
 
-const rowKey = (row: Category) => row._id
+const rowKey = (row: Category) => row.id
 
 const handleDelete = async (row: Category) => {
-  const res = await cloudApi.invokeFunction('delete-data', { col: 'categories', id: row._id })
+  const res = await deleteCategory(row.id)
   if (res.code === 200) {
     message.success('删除成功')
     getCategories()
@@ -39,9 +37,9 @@ const handleDelete = async (row: Category) => {
   else { message.error(res.msg) }
 }
 const handleEdit = (row: Category) => {
-  categoryForm.id = row._id!
+  categoryForm.id = row.id
   categoryForm.name = row.name
-  categoryForm.value = row.value
+  categoryForm.description = row.description
   showModal.value = true
 }
 const onPositiveClick = async () => {
@@ -51,21 +49,21 @@ const onPositiveClick = async () => {
     }
     else {
       if (categoryForm.id) {
-        const res = await cloudApi.invokeFunction('update-category', categoryForm)
+        const res = await updateCategory(categoryForm.id, categoryForm)
         if (res.code === 200) {
           categoryForm.id = ''
           categoryForm.name = ''
-          categoryForm.value = ''
+          categoryForm.description = ''
           message.success('修改成功')
           showModal.value = false
           getCategories()
         }
       }
       else {
-        const res = await cloudApi.invokeFunction('add-category', categoryForm)
+        const res = await addCategory(categoryForm)
         if (res.code === 200) {
           categoryForm.name = ''
-          categoryForm.value = ''
+          categoryForm.description = ''
           message.success('添加成功')
           showModal.value = false
           getCategories()
@@ -79,7 +77,7 @@ const onPositiveClick = async () => {
 const onNegativeClick = () => {
   categoryForm.id = ''
   categoryForm.name = ''
-  categoryForm.value = ''
+  categoryForm.description = ''
   showModal.value = false
 }
 const rules = {
@@ -105,9 +103,10 @@ const createColumns = (): DataTableColumns<Category> => [
     width: 80,
   },
   {
-    title: 'value',
-    key: 'value',
+    title: '介绍',
+    key: 'description',
     width: 80,
+    ellipsis: true,
   },
   {
     title: '文章数',
@@ -205,8 +204,8 @@ const createColumns = (): DataTableColumns<Category> => [
         <n-form-item label="分类名称" required path="name">
           <n-input v-model:value="categoryForm.name" type="text" placeholder="取个名字吧" />
         </n-form-item>
-        <n-form-item label="value" required path="value">
-          <n-input v-model:value="categoryForm.value" type="text" placeholder="名字拼音或英文" />
+        <n-form-item label="简介" required path="description">
+          <n-input v-model:value="categoryForm.description" type="text" placeholder="分类介绍" />
         </n-form-item>
       </n-form>
     </n-modal>
