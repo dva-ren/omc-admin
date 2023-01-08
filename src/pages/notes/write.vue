@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { PaperPlane, SettingsOutline } from '@vicons/ionicons5'
+import type { FormInst } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 
 import { addNote, queryNote, updateNote } from '~/api'
@@ -14,8 +15,9 @@ const customCreateTime = reactive({
   publishTime: null,
 })
 const message = useMessage()
+const formInstRef = ref(null)
 
-const noteForm = ref({
+const initValue = {
   title: '',
   content: '',
   mood: undefined,
@@ -26,13 +28,15 @@ const noteForm = ref({
   status: 0,
   publishTime: undefined,
   createTime: undefined,
-})
+}
+const noteForm = ref(initValue)
 
 const getArticle = async () => {
   if (id.value) {
     show.value = true
     const res = await queryNote(id.value)
     noteForm.value = res.data
+    customCreateTime.value = new Date(res.data.createTime).getTime()
     show.value = false
   }
 }
@@ -62,6 +66,10 @@ const moodOptions = [
   {
     label: '开心',
     value: '开心',
+  },
+  {
+    label: '平静',
+    value: '平静',
   },
   {
     label: '伤心',
@@ -104,10 +112,27 @@ const handleCreate = (value: string) => {
     value,
   }
 }
+
+const rules = {
+  mood: {
+    require: true,
+    min: 1,
+    message: '要不随便选个',
+  },
+  weather: {
+    require: true,
+    min: 1,
+    message: '看看外面的天气吧',
+  },
+}
 const handleAdd = async () => {
-  console.log(customCreateTime.value)
   if (!noteForm.value.title || !noteForm.value.content) {
-    message.error('请输入标题和内容')
+    message.info('请输入标题和内容')
+    return
+  }
+  if (!noteForm.value.mood || !noteForm.value.weather) {
+    active.value = true
+    message.info('要选择天气和心情哟')
     return
   }
   if (id.value) {
@@ -122,23 +147,10 @@ const handleAdd = async () => {
   }
 }
 watch(id, () => {
-  if (id.value) {
+  if (id.value)
     getArticle()
-  }
-  else {
-    noteForm.value = {
-      title: '',
-      content: '',
-      mood: undefined,
-      weather: undefined,
-      position: undefined,
-      isTop: 0,
-      allowComment: 1,
-      status: 0,
-      publishTime: undefined,
-      createTime: undefined,
-    }
-  }
+  else
+    noteForm.value = initValue
 }, { immediate: true })
 </script>
 
@@ -181,7 +193,7 @@ watch(id, () => {
           文章设定
         </template>
         <n-form
-          ref="formRef"
+          ref="formInstRef"
           :model="noteForm"
           label-placement="left"
           label-width="auto"
@@ -190,8 +202,9 @@ watch(id, () => {
           :style="{
             maxWidth: '420px',
           }"
+          :rules="rules"
         >
-          <n-form-item label="心情" path="mood" class="w-full">
+          <n-form-item label="心情" path="mood" class="w-full" required>
             <n-select
               v-model:value="noteForm.mood"
               filterable
@@ -202,7 +215,7 @@ watch(id, () => {
               @create="handleCreate"
             />
           </n-form-item>
-          <n-form-item label="天气" path="weather">
+          <n-form-item label="天气" path="weather" required>
             <n-select
               v-model:value="noteForm.weather"
               filterable

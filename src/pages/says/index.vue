@@ -20,7 +20,12 @@ const sayForm = reactive({
   author: '',
   origin: '',
 })
-
+const resetForm = () => {
+  sayForm.id = ''
+  sayForm.content = ''
+  sayForm.author = ''
+  sayForm.origin = ''
+}
 const getSays = async () => {
   loadding.value = true
   const res = await querySayList()
@@ -49,10 +54,7 @@ const onPositiveClick = async () => {
       if (sayForm.id) {
         const res = await updateSay(sayForm.id, sayForm)
         if (res.code === 200) {
-          sayForm.id = ''
-          sayForm.content = ''
-          sayForm.author = ''
-          sayForm.origin = ''
+          resetForm()
           message.success('修改成功')
           showModal.value = false
           getSays()
@@ -61,10 +63,7 @@ const onPositiveClick = async () => {
       else {
         const res = await addSay(sayForm)
         if (res.code === 200) {
-          sayForm.id = ''
-          sayForm.content = ''
-          sayForm.author = ''
-          sayForm.origin = ''
+          resetForm()
           message.success('添加成功')
           showModal.value = false
           getSays()
@@ -94,10 +93,7 @@ const handleEdit = (row: Say) => {
   showModal.value = true
 }
 const onNegativeClick = () => {
-  sayForm.id = ''
-  sayForm.content = ''
-  sayForm.author = ''
-  sayForm.origin = ''
+  resetForm()
   showModal.value = false
 }
 const createColumns = (): DataTableColumns<Say> => [

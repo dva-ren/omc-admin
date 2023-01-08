@@ -27,7 +27,6 @@ const initValue = {
   status: 0,
 }
 const articleForm = ref(initValue)
-const rowData = ref<Article>()
 
 const categoryOptions = ref<Array<{ label: string; value: string }>>([])
 
@@ -36,6 +35,7 @@ const getArticle = async () => {
     show.value = true
     const res = await queryArticle(id.value)
     articleForm.value = res.data
+    customCreateTime.value = new Date(res.data.createTime).getTime()
     show.value = false
   }
 }
@@ -43,10 +43,16 @@ const getCategory = async () => {
   const res = await queryCategoryList()
   categoryOptions.value = res.data.map(c => ({ label: c.name, value: c.id }))
 }
+
 const handleAdd = async () => {
   const { title, content, categoryId } = articleForm.value
-  if (!title || !content || !categoryId) {
-    message.error('还有未填项')
+  if (!title || !content) {
+    message.info('标题或内容为空')
+    return
+  }
+  if (!categoryId) {
+    message.info('要选择文章分类哟')
+    active.value = true
     return
   }
   const form = unref(articleForm)
@@ -74,16 +80,7 @@ watch(id, () => {
     Promise.all([getArticle(), getCategory()])
   }
   else {
-    articleForm.value = {
-      title: '',
-      content: '',
-      label: [],
-      categoryId: undefined,
-      isTop: 0,
-      allowComment: 0,
-      createTime: undefined,
-      status: 0,
-    }
+    articleForm.value = initValue
     getCategory()
   }
 }, { immediate: true })

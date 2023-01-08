@@ -37,12 +37,6 @@ const createColumns = (): DataTableColumns<Note> => [
   {
     type: 'selection',
   },
-  // {
-  //   title: 'id',
-  //   key: '_id',
-  //   width: 80,
-  //   ellipsis: true,
-  // },
   {
     title: '标题',
     key: 'title',
@@ -155,7 +149,6 @@ const createColumns = (): DataTableColumns<Note> => [
       :row-key="rowKey"
       :loading="loadding"
       row-class-name="table-row"
-      width="100"
     />
   </div>
 </template>
