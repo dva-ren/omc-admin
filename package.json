@@ -17,6 +17,7 @@
     "axios": "^1.2.2",
     "dayjs": "^1.11.7",
     "laf-client-sdk": "^0.8.13",
+    "nprogress": "^0.2.0",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },

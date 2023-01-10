@@ -1,7 +1,7 @@
 import http from '~/composables/requests'
-import type { Note, PageInfo, Response } from '~/types'
+import type { Note, PageInfo, AsyncResponse } from '~/types'
 
-type NoteListResult = Response<PageInfo<Note>>
+type NoteListResult = AsyncResponse<PageInfo<Note>>
 
 export const queryNoteList = (pageNum = 1, pageSize = 20): NoteListResult => {
   return http.request({
@@ -9,13 +9,13 @@ export const queryNoteList = (pageNum = 1, pageSize = 20): NoteListResult => {
     method: 'GET',
   })
 }
-export const queryNote = (id: string): Response<Note> => {
+export const queryNote = (id: string): AsyncResponse<Note> => {
   return http.request({
     url: `/note/${id}`,
     method: 'GET',
   })
 }
-export const addNote = (data: Note): Response<Note> => {
+export const addNote = (data: Note): AsyncResponse<Note> => {
   return http.request({
     url: '/note',
     method: 'POST',
@@ -23,7 +23,7 @@ export const addNote = (data: Note): Response<Note> => {
   })
 }
 
-export const updateNote = (id: string, data: Note): Response<Note> => {
+export const updateNote = (id: string, data: Note): AsyncResponse<Note> => {
   return http.request({
     url: `/note/${id}`,
     method: 'POST',
@@ -31,7 +31,7 @@ export const updateNote = (id: string, data: Note): Response<Note> => {
   })
 }
 
-export const deleteNote = (id: string): Response<null> => {
+export const deleteNote = (id: string): AsyncResponse<null> => {
   return http.request({
     url: `/note/${id}`,
     method: 'PUT',

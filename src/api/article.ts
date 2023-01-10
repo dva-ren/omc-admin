@@ -1,7 +1,7 @@
 import http from '~/composables/requests'
-import type { Article, PageInfo, Response } from '~/types'
+import type { Article, PageInfo, AsyncResponse } from '~/types'
 
-type ArticleListResult = Response<PageInfo<Article>>
+type ArticleListResult = AsyncResponse<PageInfo<Article>>
 
 export const queryArticleList = (pageNum = 1, pageSize = 20): ArticleListResult => {
   return http.request({
@@ -9,13 +9,13 @@ export const queryArticleList = (pageNum = 1, pageSize = 20): ArticleListResult 
     method: 'GET',
   })
 }
-export const queryArticle = (id: string): Response<Article> => {
+export const queryArticle = (id: string): AsyncResponse<Article> => {
   return http.request({
     url: `/article/${id}`,
     method: 'GET',
   })
 }
-export const addArticle = (data: Article): Response<Article> => {
+export const addArticle = (data: Article): AsyncResponse<Article> => {
   return http.request({
     url: '/article',
     method: 'POST',
@@ -23,7 +23,7 @@ export const addArticle = (data: Article): Response<Article> => {
   })
 }
 
-export const updateArticle = (id: string, data: Article): Response<Article> => {
+export const updateArticle = (id: string, data: Article): AsyncResponse<Article> => {
   return http.request({
     url: `/article/${id}`,
     method: 'POST',
@@ -31,7 +31,7 @@ export const updateArticle = (id: string, data: Article): Response<Article> => {
   })
 }
 
-export const deleteArticle = (id: string): Response<null> => {
+export const deleteArticle = (id: string): AsyncResponse<null> => {
   return http.request({
     url: `/article/${id}`,
     method: 'PUT',

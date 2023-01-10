@@ -3,6 +3,7 @@ export interface Response<T> {
   msg: string
   data: T
 }
+export type AsyncResponse<T> = Promise<Response<T>>
 
 export interface PageParams {
   pageSize: number
@@ -93,4 +94,27 @@ export interface Say {
   createTime: string
   updateTime: string
   isDelete: number
+}
+export interface MasterForm {
+  introduce: string
+  mail: string
+  url: string
+  username: string
+  nickname: string
+  avatar: string
+  socialIds: Array<{ key: string; value: string }>
+}
+
+export interface Master extends MasterForm {
+  id: string
+  lastLoginIp: string
+  lastLoginTime: string
+  createTime: string
+  updateTime: string
+}
+
+export interface Socialids {
+  bilibili: number
+  netease: number
+  github: string
 }

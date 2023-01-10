@@ -13,7 +13,7 @@ const pagination = reactive({ pageSize: 20 })
 const message = useMessage()
 const showModal = ref(false)
 const formInstRef = ref<FormInst | null>(null)
-
+const loading = ref(false)
 const sayForm = reactive({
   id: '',
   content: '',
@@ -51,23 +51,32 @@ const onPositiveClick = async () => {
       message.error('还有未填项')
     }
     else {
-      if (sayForm.id) {
-        const res = await updateSay(sayForm.id, sayForm)
-        if (res.code === 200) {
-          resetForm()
-          message.success('修改成功')
-          showModal.value = false
-          getSays()
+      try {
+        loading.value = true
+        if (sayForm.id) {
+          const res = await updateSay(sayForm.id, sayForm)
+          if (res.code === 200) {
+            resetForm()
+            message.success('修改成功')
+            showModal.value = false
+            getSays()
+          }
+        }
+        else {
+          const res = await addSay(sayForm)
+          if (res.code === 200) {
+            resetForm()
+            message.success('添加成功')
+            showModal.value = false
+            getSays()
+          }
         }
       }
-      else {
-        const res = await addSay(sayForm)
-        if (res.code === 200) {
-          resetForm()
-          message.success('添加成功')
-          showModal.value = false
-          getSays()
-        }
+      catch (e: any) {
+        message.error(e)
+      }
+      finally {
+        loading.value = false
       }
     }
   })
@@ -103,32 +112,25 @@ const createColumns = (): DataTableColumns<Say> => [
   {
     title: '内容',
     key: 'content',
-    width: 200,
-    ellipsis: true,
+    width: 400,
   },
   {
     title: '作者',
     key: 'category',
-    width: 80,
+    width: 60,
     render: row => emptyValue(row.author),
   },
   {
     title: '来源',
     key: 'label',
-    width: 100,
+    width: 60,
     render: row => emptyValue(row.origin),
   },
   {
     title: '创建于',
-    width: 100,
+    width: 60,
     key: 'createTime',
     render: row => dateFns(row.createTime).fromNow(),
-  },
-  {
-    title: '最后修改',
-    width: 100,
-    key: 'updateTime',
-    render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
   },
   {
     title: '操作',
@@ -181,13 +183,13 @@ const createColumns = (): DataTableColumns<Say> => [
 
 <template>
   <div>
-    <div pb-4 text-xl flex justify-between>
+    <div pb-4 text-xl font-bold flex justify-between>
       <div>
         说点什么
       </div>
       <div>
         <!-- 添加按钮 -->
-        <NButton type="success" circle size="large" @click="showModal = !showModal">
+        <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="showModal = !showModal">
           <template #icon>
             <n-icon><Add /></n-icon>
           </template>

@@ -176,7 +176,7 @@ const createColumns = (): DataTableColumns<Category> => [
 
 <template>
   <div>
-    <div pb-4 text-xl flex justify-between>
+    <div pb-4 text-xl font-bold flex justify-between>
       <div>
         博文·标签/分类
       </div>

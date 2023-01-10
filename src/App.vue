@@ -2,21 +2,21 @@
 import { RouterLink, RouterView } from 'vue-router'
 import type { Component } from 'vue'
 import { h, ref } from 'vue'
-import { NIcon } from 'naive-ui'
+import { NIcon, dateZhCN, zhCN } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
   BookOutline,
   CodeSlashOutline,
   DiscOutline,
   EyeSharp,
-  PencilSharp,
-
+  SettingsOutline,
 } from '@vicons/ionicons5'
 import {
   Hash,
   Message2,
   Pencil,
 } from '@vicons/tabler'
+
 const collapsed = ref(false)
 
 ;(() => {
@@ -51,7 +51,7 @@ function renderIcon(icon: Component) {
 
 const menuOptions: MenuOption[] = [
   {
-    label: '仪表盘',
+    label: '总览',
     key: 'dashboard',
     href: '/dashboard',
     icon: renderIcon(DiscOutline),
@@ -84,7 +84,7 @@ const menuOptions: MenuOption[] = [
     ],
   },
   {
-    label: '点滴',
+    label: '生活点滴',
     key: 'notes',
     icon: renderIcon(BookOutline),
     children: [
@@ -103,42 +103,50 @@ const menuOptions: MenuOption[] = [
     ],
   },
   {
-    label: '说说',
+    label: '说点什么',
     key: 'says',
     icon: renderIcon(Message2),
     href: '/says',
+  },
+  {
+    label: '设定',
+    key: 'setting',
+    icon: renderIcon(SettingsOutline),
+    href: '/setting/user',
   },
 ]
 </script>
 
 <template>
-  <n-message-provider>
-    <main h-full>
-      <n-layout has-sider h-full>
-        <n-layout-sider
-          bordered
-          collapse-mode="width"
-          :collapsed-width="64"
-          :width="240"
-          :collapsed="collapsed"
-          show-trigger
-          @collapse="collapsed = true"
-          @expand="collapsed = false"
-        >
-          <n-menu
-            :collapsed="collapsed"
+  <n-config-provider :locale="zhCN" :date-locale="dateZhCN" h-full>
+    <n-message-provider>
+      <main h-full>
+        <n-layout has-sider h-full>
+          <n-layout-sider
+            bordered
+            collapse-mode="width"
             :collapsed-width="64"
-            :collapsed-icon-size="22"
-            :options="menuOptions"
-            :render-label="renderMenuLabel"
-          />
-        </n-layout-sider>
-        <n-layout py-4 px-1 sm:p-10>
-          <RouterView />
+            :width="240"
+            :collapsed="collapsed"
+            show-trigger
+            @collapse="collapsed = true"
+            @expand="collapsed = false"
+          >
+            <n-menu
+              :collapsed="collapsed"
+              :collapsed-width="64"
+              :collapsed-icon-size="22"
+              :options="menuOptions"
+              :render-label="renderMenuLabel"
+            />
+          </n-layout-sider>
+          <n-layout py-4 px-1 sm:p-10>
+            <RouterView />
+          </n-layout>
         </n-layout>
-      </n-layout>
-    </main>
-  </n-message-provider>
+      </main>
+    </n-message-provider>
+  </n-config-provider>
 </template>
 
 <style scoped>

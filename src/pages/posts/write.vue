@@ -88,7 +88,7 @@ watch(id, () => {
 
 <template>
   <n-spin :show="show">
-    <div pb-4 text-xl flex justify-between>
+    <div pb-4 text-xl font-bold flex justify-between>
       <div>
         撰写新文章
       </div>

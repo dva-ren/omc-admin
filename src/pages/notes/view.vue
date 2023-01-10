@@ -40,7 +40,7 @@ const createColumns = (): DataTableColumns<Note> => [
   {
     title: '标题',
     key: 'title',
-    width: 200,
+    width: 300,
     ellipsis: true,
     render: (row) => {
       return h(
@@ -136,7 +136,7 @@ const createColumns = (): DataTableColumns<Note> => [
 
 <template>
   <div>
-    <div text="18px" font-bold>
+    <div pb-4 text-xl font-bold>
       日记 · 管理
     </div>
     <n-data-table
