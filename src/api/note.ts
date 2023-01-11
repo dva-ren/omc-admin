@@ -1,5 +1,5 @@
 import http from '~/composables/requests'
-import type { Note, PageInfo, AsyncResponse } from '~/types'
+import type { AsyncResponse, Note, PageInfo } from '~/types'
 
 type NoteListResult = AsyncResponse<PageInfo<Note>>
 

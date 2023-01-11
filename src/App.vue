@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import type { Component } from 'vue'
 import { h, ref } from 'vue'
-import { NIcon, dateZhCN, zhCN } from 'naive-ui'
+import { NIcon, NText, dateZhCN, zhCN } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
   BookOutline,
@@ -16,6 +16,7 @@ import {
   Message2,
   Pencil,
 } from '@vicons/tabler'
+import { useMainStore } from './store'
 
 const collapsed = ref(false)
 
@@ -24,6 +25,7 @@ const collapsed = ref(false)
     toggleDark()
   if (document.documentElement.clientWidth < 600)
     collapsed.value = true
+  useMainStore().init()
 })()
 
 function renderMenuLabel(option: MenuOption) {
@@ -50,6 +52,7 @@ function renderIcon(icon: Component) {
 }
 
 const menuOptions: MenuOption[] = [
+
   {
     label: '总览',
     key: 'dashboard',
@@ -132,6 +135,11 @@ const menuOptions: MenuOption[] = [
             @collapse="collapsed = true"
             @expand="collapsed = false"
           >
+            <div text-center p-4 style="border-bottom: 1px rgba(224, 224, 224, 0.2) solid;">
+              <div font-bold select-none min-w-0>
+                灰色の青
+              </div>
+            </div>
             <n-menu
               :collapsed="collapsed"
               :collapsed-width="64"

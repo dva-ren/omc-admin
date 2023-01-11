@@ -1,5 +1,18 @@
 import http from '~/composables/requests'
-import type { AsyncResponse, Master, MasterForm } from '~/types'
+import type { AsyncResponse, Master, MasterForm, SystemState } from '~/types'
+
+/**
+ * 登录
+ * @param password 密码
+ * @returns null
+ */
+export const login = (password: string): AsyncResponse<Master> => {
+  return http.request({
+    url: '/login',
+    method: 'POST',
+    data: { password },
+  })
+}
 
 /**
  * 更改密码
@@ -8,7 +21,7 @@ import type { AsyncResponse, Master, MasterForm } from '~/types'
  */
 export const updatePassword = (password: string): AsyncResponse<null> => {
   return http.request({
-    url: '/changePassword',
+    url: '/password',
     method: 'POST',
     data: { password },
   })
@@ -21,7 +34,7 @@ export const updatePassword = (password: string): AsyncResponse<null> => {
  */
 export const updateMaster = (data: MasterForm): AsyncResponse<null> => {
   return http.request({
-    url: '/user',
+    url: '/master',
     method: 'POST',
     data,
   })
@@ -33,7 +46,19 @@ export const updateMaster = (data: MasterForm): AsyncResponse<null> => {
  */
 export const getMaster = (): AsyncResponse<Master> => {
   return http.request({
-    url: '/user',
+    url: '/master',
+    method: 'GET',
+  })
+}
+
+/**
+ * 获取系统状态信息
+ * @returns 系统状态信息
+ *
+ */
+export const querySystemState = (): AsyncResponse<SystemState> => {
+  return http.request({
+    url: '/state',
     method: 'GET',
   })
 }

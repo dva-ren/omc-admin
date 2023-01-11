@@ -1,7 +1,26 @@
 // 文件 utils/axios.ts
 import type { AxiosInstance, AxiosRequestConfig } from 'axios'
 import axios from 'axios'
+import type { ConfigProviderProps } from 'naive-ui'
+import {
+  createDiscreteApi,
+  darkTheme,
+  lightTheme,
+} from 'naive-ui'
 import type { Response } from '~/types'
+
+const themeRef = ref<'light' | 'dark'>('light')
+const configProviderPropsRef = computed<ConfigProviderProps>(() => ({
+  theme: themeRef.value === 'light' ? lightTheme : darkTheme,
+}))
+
+const { message } = createDiscreteApi(
+  ['message'],
+  {
+    configProviderProps: configProviderPropsRef,
+  },
+)
+
 class HttpRequest {
   private readonly baseUrl: string
   constructor() {
@@ -39,16 +58,17 @@ class HttpRequest {
       // console.log('返回数据处理', data)
       if (data?.code !== 200) {
         // message.error(data?.msg)
-        return Promise.reject(data)
+        message.error(data?.msg)
+        // return Promise.reject(data)
+        return data
+      }
+      if (data.code === 5000) {
+        localStorage.removeItem('token')
+        return
       }
       return data
     }, (error: any) => {
-      // eslint-disable-next-line no-console
-      console.log('error==>', error)
-      if (error.response.status === 500)
-        console.error('服务器错误')
-      else
-        console.error(error.msg)
+      message.error('服务器错误')
       return Promise.reject(error)
     })
   }

@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import naive from 'naive-ui'
 import routes from 'virtual:generated-pages'
+import { createPinia } from 'pinia'
 import NProgress from 'nprogress'
 import App from './App.vue'
 import 'nprogress/nprogress.css'
@@ -12,6 +13,7 @@ import 'uno.css'
 import 'vfonts/Lato.css'
 // 等宽字体
 import 'vfonts/FiraCode.css'
+import { useMainStore } from './store'
 
 const app = createApp(App)
 const router = createRouter({
@@ -21,7 +23,13 @@ const router = createRouter({
 NProgress.configure({ showSpinner: false })
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  next()
+  const token = localStorage.getItem('token')
+  if (to.path === '/login')
+    next()
+  else if (!token)
+    next('/login')
+  else
+    next()
 })
 router.afterEach(() => {
   // document.documentElement.scrollTop = 0
@@ -29,6 +37,7 @@ router.afterEach(() => {
   window.scrollTo({ top: 0 })
   NProgress.done()
 })
+app.use(createPinia())
 app.use(naive)
 app.use(router)
 app.mount('#app')

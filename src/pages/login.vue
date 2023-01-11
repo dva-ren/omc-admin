@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { cloudApi } from '~/composables'
+import { login } from '~/api'
+import { useMainStore } from '~/store'
 
 const router = useRouter()
 const message = useMessage()
@@ -9,18 +10,18 @@ const loginForm = reactive({
   password: '',
 })
 
-const login = async () => {
-  if (!loginForm.username || !loginForm.password) {
-    message.warning('请输入用户名或密码')
+const handleLogin = async () => {
+  if (!loginForm.password) {
+    message.warning('请输入密码')
     return
   }
-  const res = await cloudApi.invokeFunction('app-login', loginForm)
+  const res = await login(loginForm.password)
   if (res.code === 200) {
-    localStorage.setItem('access_token', res.data.access_token)
+    localStorage.setItem('token', res.token!)
+    useMainStore().isLogin = true
     message.success('登录成功')
     router.replace('/dashboard')
   }
-  else { message.error(res.error) }
 }
 </script>
 
@@ -28,13 +29,12 @@ const login = async () => {
   <div flex items-center justify-center h-full>
     <div flex flex-col gap-4 items-center>
       <div text-xl mb-4>
-        Oh my cat
+        灰色の青
       </div>
-      <input v-model.trim="loginForm.username" w-60 placeholder="用户名" type="text" outline-none border="b" p-1 hover:border="b green-4" transition>
-      <input v-model.trim="loginForm.password" w-60 placeholder="密码" type="password" outline-none border="b" p-1 hover:border="b green-4" transition>
-      <button mt-6 w-60 border p-1 rounded btn transition @click="login">
+      <n-input v-model:value="loginForm.password" autofocus placeholder="密码" type="password" @keyup.enter="handleLogin" />
+      <n-button type="primary" round @click="handleLogin">
         登录
-      </button>
+      </n-button>
     </div>
   </div>
 </template>

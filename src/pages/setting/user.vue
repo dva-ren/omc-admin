@@ -2,30 +2,15 @@
 import type { FormItemRule, FormRules, UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui'
 import type { Master, MasterForm } from '~/types'
 import { updateMaster } from '~/api'
+import { upload } from '~/composables/upload'
+import { useMainStore } from '~/store'
 
 const emailReg = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 const message = useMessage()
 
-const initValue: MasterForm = {
-  username: 'aaa',
-  nickname: 'ssdf',
-  mail: '4444@qq.com',
-  url: 'https://avatars.githubusercontent.com/',
-  avatar: 'https://avatars.githubusercontent.com/u/41265413?v=4',
-  introduce: '这是你的嘛',
-  socialIds: [{
-    key: 'bilibili',
-    value: '1111',
-  }],
-}
-const rowData: Master = {
-  id: '111',
-  ...initValue,
-  createTime: '2023-01-09 18:20',
-  updateTime: '2023-01-09 18:20',
-  lastLoginIp: '10.2.41.51',
-  lastLoginTime: '2023-01-09 18:20',
-}
+const mainStore = useMainStore()
+
+const rowData: Master = mainStore.master
 
 const rules: FormRules = {
   username: [
@@ -65,7 +50,7 @@ const rules: FormRules = {
     },
   ],
 }
-const master = reactive<MasterForm>(initValue)
+const master = mainStore.master
 
 const options = [
   {
@@ -117,9 +102,16 @@ const onBeforeUpload = (data: {
   }
   return true
 }
-const handleUpload = ({ file }: UploadCustomRequestOptions) => {
-  console.log(file.file)
-  master.avatar = file.name
+const handleUpload = async ({ file, onFinish, onError }: UploadCustomRequestOptions) => {
+  try {
+    const res = await upload('/imgs', file.file!)
+    master.avatar = res.url
+    onFinish()
+  }
+  catch {
+    message.error('上传失败')
+    onError()
+  }
 }
 
 const onRemove = (idx: number) => {

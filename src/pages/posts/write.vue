@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import { PaperPlane, SettingsOutline } from '@vicons/ionicons5'
-import type { Article, Category } from '~/types'
+import { Hash } from '@vicons/tabler'
+import type { UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui'
+import type { ArticleForm } from '~/types'
+
 import { addArticle, queryArticle, queryCategoryList, updateArticle } from '~/api'
 
 const route = useRoute()
@@ -8,26 +11,26 @@ const id = computed(() => route.query.id as string)
 const show = ref(false)
 const active = ref(false)
 const showModal = ref(false)
-const previewFileList: any = []
-const previewImageUrl = ''
+const previewImage = ref(false)
 const message = useMessage()
 const customCreateTime = reactive({
   flag: false,
   value: Date.now(),
   publishTime: null,
 })
-const initValue = {
+const initValue: ArticleForm = {
   title: '',
   content: '',
-  label: [],
-  categoryId: undefined,
+  label: '',
+  categoryId: '',
   isTop: 0,
   allowComment: 1,
-  createTime: undefined,
+  cover: '',
+  createTime: '',
   status: 0,
 }
 const articleForm = ref(initValue)
-
+const previewFileList = ref<UploadFileInfo[]>([])
 const categoryOptions = ref<Array<{ label: string; value: string }>>([])
 
 const getArticle = async () => {
@@ -36,6 +39,14 @@ const getArticle = async () => {
     const res = await queryArticle(id.value)
     articleForm.value = res.data
     customCreateTime.value = new Date(res.data.createTime).getTime()
+    if (res.data.cover) {
+      previewFileList.value.push({
+        id: 'cover',
+        name: '封面',
+        status: 'finished',
+        url: res.data.cover,
+      })
+    }
     show.value = false
   }
 }
@@ -57,7 +68,7 @@ const handleAdd = async () => {
   }
   const form = unref(articleForm)
   if (customCreateTime.flag)
-    form.createTime = customCreateTime.value
+    form.createTime = customCreateTime.value.toString()
   form.label = form.label ? JSON.stringify(form.label) : ''
   if (id.value) {
     const res = await updateArticle(id.value, form)
@@ -73,7 +84,39 @@ const handleAdd = async () => {
     else
       message.error(res.msg)
   }
-  articleForm.value = initValue
+}
+
+const onBeforeUpload = (data: {
+  file: UploadFileInfo
+  fileList: UploadFileInfo[]
+}) => {
+  if (!data.file.file?.type.includes('image')) {
+    message.info('只能上传图片格式')
+    return false
+  }
+  return true
+}
+const handleUpload = async ({ file, onFinish, onError }: UploadCustomRequestOptions) => {
+  try {
+    const res = await upload('/imgs', file.file!)
+    articleForm.value.cover = res.url
+    previewFileList.value.push({
+      id: res.name,
+      name: '封面',
+      status: 'finished',
+      url: res.url,
+    })
+    message.success('上传成功')
+    onFinish()
+  }
+  catch {
+    message.error('上传失败')
+    onError()
+  }
+}
+const onCoverRemove = () => {
+  articleForm.value.cover = ''
+  previewFileList.value = []
 }
 watch(id, () => {
   if (id.value) {
@@ -94,6 +137,12 @@ watch(id, () => {
       </div>
       <div>
         <n-space>
+          <!-- 打开Markdown编辑器 -->
+          <n-button type="info" secondary circle size="large" @click="showModal = true">
+            <template #icon>
+              <n-icon><Hash /></n-icon>
+            </template>
+          </n-button>
           <!-- 设置按钮 -->
           <n-button type="success" secondary circle size="large" @click="active = !active">
             <template #icon>
@@ -116,7 +165,7 @@ watch(id, () => {
         type="textarea"
         placeholder="内容"
         show-count
-        h-100
+        h-80vh
       />
     </n-space>
     <n-drawer v-model:show="active" width="100%" style="max-width: 480px;">
@@ -145,7 +194,7 @@ watch(id, () => {
           <n-form-item label="发布状态" path="state" required>
             <n-select
               v-model:value="articleForm.status"
-              :options="[{ label: '正常发布', value: 0 }, { label: '删除', value: 1 }, { label: '草稿', value: 2 }]"
+              :options="[{ label: '正常发布', value: 0 }, { label: '隐藏', value: 1 }, { label: '草稿', value: 2 }]"
               placeholder="状态"
             />
           </n-form-item>
@@ -166,18 +215,21 @@ watch(id, () => {
           </n-form-item>
           <n-form-item label="自定义封面图" path="cover">
             <n-upload
-              action="https://www.mocky.io/v2/5e4bafc63100007100d8b70f"
-              :default-file-list="previewFileList"
               list-type="image-card"
-              @preview="showModal = true"
+              :custom-request="handleUpload"
+              :on-before-upload="onBeforeUpload"
+              :default-file-list="previewFileList"
+              :on-remove="onCoverRemove"
+              :max="1"
+              @preview="previewImage = true"
             />
             <n-modal
-              v-model:show="showModal"
+              v-model:show="previewImage"
               preset="card"
               style="width: 600px"
-              title="一张很酷的图片"
+              title="封面"
             >
-              <img :src="previewImageUrl" style="width: 100%">
+              <img :src="articleForm.cover" style="width: 100%">
             </n-modal>
           </n-form-item>
         </n-form>
@@ -191,5 +243,8 @@ watch(id, () => {
     <template #description>
       你不知道你有多幸运
     </template>
+    <n-modal v-model:show="showModal">
+      <MyEditor v-model="articleForm.content" @on-close="showModal = false" />
+    </n-modal>
   </n-spin>
 </template>

@@ -1,6 +1,7 @@
 export interface Response<T> {
   code: number
   msg: string
+  token?: string
   data: T
 }
 export type AsyncResponse<T> = Promise<Response<T>>
@@ -30,7 +31,19 @@ export interface PageInfo<T> {
   navigateFirstPage: number
   navigateLastPage: number
 }
-
+export interface ArticleForm {
+  title: string
+  content: string
+  summary?: string
+  categoryId: string
+  categoryName?: string
+  label?: string
+  cover?: string
+  isTop: number
+  status: number
+  allowComment: number
+  createTime?: string
+}
 export interface Article {
   id: string
   summary: string
@@ -96,6 +109,7 @@ export interface Say {
   isDelete: number
 }
 export interface MasterForm {
+  id: string
   introduce: string
   mail: string
   url: string
@@ -117,4 +131,24 @@ export interface Socialids {
   bilibili: number
   netease: number
   github: string
+}
+
+export interface SystemState {
+  allComments: number
+  categories: number
+  comments: number
+  link_apply: number
+  links: number
+  notes: number
+  pages: number
+  posts: number
+  says: number
+  recently: number
+  unreadComments: number
+  online: number
+  todayMaxOnline: number
+  todayOnlineTotal: number
+  callTime: number
+  uv: number
+  todayIpAccessCount: number
 }
