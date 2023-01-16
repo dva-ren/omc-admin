@@ -88,14 +88,14 @@ const displayList: DisplayList[] = [
     key: 'comments',
     edit: '',
     view: '',
-    manage: '/posts/category',
+    manage: '/comment',
     icon: Messages,
   },
   {
     title: '未读评论',
     key: 'unreadComments',
     bottonText: '查看',
-    edit: '/comment/unred',
+    edit: `/comment?status=${0}`,
     view: '',
     manage: '',
     icon: MessageReport,
@@ -145,7 +145,12 @@ queryState()
             {{ state[i.key] || 0 }}
           </div>
           <n-space>
-            <n-button v-if="i.edit" type="primary" round @click="go(i.edit)">
+            <n-badge v-if="i.key === 'unreadComments'" :value="state.unreadComments">
+              <n-button v-if="i.edit" type="primary" round @click="go(i.edit)">
+                查看
+              </n-button>
+            </n-badge>
+            <n-button v-if="i.edit && i.key !== 'unreadComments'" type="primary" round @click="go(i.edit)">
               {{ i.bottonText || '撰写' }}
             </n-button>
             <n-button v-if="i.manage" secondary round @click="go(i.manage)">

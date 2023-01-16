@@ -1,16 +1,18 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NPopconfirm } from 'naive-ui'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
 
-import { RouterLink } from 'vue-router'
 import type { Article } from '~/types'
 import { dateFns, emptyValue } from '~/composables'
 import { deleteArticle, queryArticleList } from '~/api'
+import { useMainStore } from '~/store'
 
 const articles = ref<Array<Article>>([])
 const loadding = ref(true)
 const pagination = reactive({ pageSize: 20 })
 const message = useMessage()
+const website = useMainStore().master.url
+const router = useRouter()
 
 const getArticles = async () => {
   const res = await queryArticleList()
@@ -40,12 +42,10 @@ const createColumns = (): DataTableColumns<Article> => [
     ellipsis: true,
     render: (row) => {
       return h(
-        RouterLink,
+        'a',
         {
-          to: {
-            path: '/posts/write',
-            query: { id: row.id },
-          },
+          href: `${website.endsWith('/') ? website : `${website}/`}posts/${row.id}`,
+          target: '_blank',
           class: 'link',
         },
         { default: () => row.title },
@@ -80,44 +80,47 @@ const createColumns = (): DataTableColumns<Article> => [
     title: '操作',
     key: 'actions',
     fixed: 'right',
-    width: 60,
+    width: 100,
     render(row) {
-      if (row.status === 0) {
-        return h(
-          NPopconfirm,
-          {
-            onPositiveClick: () => handleDelete(row, 1),
-          },
-          {
-            default: () => '确认删除吗?',
-            trigger: () => {
-              return h(
-                NButton,
-                {
-                  strong: true,
-                  secondary: true,
-                  size: 'tiny',
-                  type: 'error',
+      return h(
+        NSpace,
+        {},
+        {
+          default: () => [
+            h(NButton,
+              {
+                strong: true,
+                secondary: true,
+                size: 'tiny',
+                onClick: () => {
+                  router.push(`/posts/write?id=${row.id}`)
                 },
-                { default: () => '删除' },
-              )
-            },
-          },
-        )
-      }
-      else {
-        return h(
-          NButton,
-          {
-            strong: true,
-            secondary: true,
-            size: 'tiny',
-            type: 'info',
-            onClick: () => handleDelete(row, 0),
-          },
-          { default: () => '恢复' },
-        )
-      }
+                type: 'tertiary',
+              },
+              { default: () => '编辑' }),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleDelete(row, 1),
+              },
+              {
+                default: () => '确认删除吗?',
+                trigger: () => {
+                  return h(
+                    NButton,
+                    {
+                      strong: true,
+                      secondary: true,
+                      size: 'tiny',
+                      type: 'error',
+                    },
+                    { default: () => '删除' },
+                  )
+                },
+              },
+            ),
+          ],
+        })
     },
   },
 ]

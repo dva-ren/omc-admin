@@ -13,7 +13,6 @@ import 'uno.css'
 import 'vfonts/Lato.css'
 // 等宽字体
 import 'vfonts/FiraCode.css'
-import { useMainStore } from './store'
 
 const app = createApp(App)
 const router = createRouter({
@@ -28,6 +27,8 @@ router.beforeEach((to, from, next) => {
     next()
   else if (!token)
     next('/login')
+  else if (to.path === '/')
+    next('/dashboard')
   else
     next()
 })

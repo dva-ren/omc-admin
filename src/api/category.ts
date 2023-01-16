@@ -1,19 +1,19 @@
 import http from '~/composables/requests'
-import type { Category, Response } from '~/types'
+import type { AsyncResponse, Category } from '~/types'
 
-export const queryCategoryList = (): Response<Array<Category>> => {
+export const queryCategoryList = (): AsyncResponse<Array<Category>> => {
   return http.request({
     url: '/category',
     method: 'GET',
   })
 }
-export const queryCategory = (id: string): Response<Category> => {
+export const queryCategory = (id: string): AsyncResponse<Category> => {
   return http.request({
     url: `/category/${id}`,
     method: 'GET',
   })
 }
-export const addCategory = (data: Category): Response<Category> => {
+export const addCategory = (data: Category): AsyncResponse<Category> => {
   return http.request({
     url: '/category',
     method: 'POST',
@@ -21,7 +21,7 @@ export const addCategory = (data: Category): Response<Category> => {
   })
 }
 
-export const updateCategory = (id: string, data: Category): Response<Category> => {
+export const updateCategory = (id: string, data: Category): AsyncResponse<Category> => {
   return http.request({
     url: `/category/${id}`,
     method: 'POST',
@@ -29,7 +29,7 @@ export const updateCategory = (id: string, data: Category): Response<Category> =
   })
 }
 
-export const deleteCategory = (id: string): Response<null> => {
+export const deleteCategory = (id: string): AsyncResponse<null> => {
   return http.request({
     url: `/category/${id}`,
     method: 'PUT',

@@ -55,7 +55,12 @@ class HttpRequest {
     instance.interceptors.response.use((res) => {
       // 返回数据
       const { data } = res
-      // console.log('返回数据处理', data)
+      if (data?.code === 405) {
+        // message.error(data?.msg)
+        message.error('登录失效啦')
+        localStorage.removeItem('token')
+        return Promise.reject(data)
+      }
       if (data?.code !== 200) {
         // message.error(data?.msg)
         message.error(data?.msg)

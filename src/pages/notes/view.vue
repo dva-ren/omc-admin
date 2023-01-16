@@ -1,16 +1,19 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NPopconfirm } from 'naive-ui'
-import { RouterLink } from 'vue-router'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+
 import { deleteNote, queryNoteList } from '~/api'
 
 import type { Note } from '~/types'
 import { dateFns, emptyValue } from '~/composables'
+import { useMainStore } from '~/store'
 
 const notes = ref<Array<Note>>([])
 const loadding = ref(true)
 const pagination = reactive({ pageSize: 20 })
 const message = useMessage()
+const website = useMainStore().master.url
+const router = useRouter()
 
 const getArticles = async () => {
   loadding.value = true
@@ -44,12 +47,10 @@ const createColumns = (): DataTableColumns<Note> => [
     ellipsis: true,
     render: (row) => {
       return h(
-        RouterLink,
+        'a',
         {
-          to: {
-            path: '/notes/write',
-            query: { id: row.id },
-          },
+          href: `${website.endsWith('/') ? website : `${website}/`}notes/${row.id}`,
+          target: '_blank',
           class: 'link',
         },
         { default: () => row.title },
@@ -66,24 +67,24 @@ const createColumns = (): DataTableColumns<Note> => [
   {
     title: '天气',
     key: 'weather',
-    width: 100,
+    width: 80,
     render: row => emptyValue(row.weather),
   },
   {
     title: '位置',
     key: 'position',
-    width: 100,
+    width: 80,
     render: row => emptyValue(row.position),
   },
   {
     title: '创建于',
-    width: 100,
+    width: 80,
     key: 'createTime',
     render: row => dateFns(row.createTime).fromNow(),
   },
   {
     title: '最后修改',
-    width: 100,
+    width: 80,
     key: 'updateTime',
     render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
   },
@@ -91,44 +92,47 @@ const createColumns = (): DataTableColumns<Note> => [
     title: '操作',
     key: 'actions',
     fixed: 'right',
-    width: 60,
+    width: 100,
     render(row) {
-      if (row.status === 0) {
-        return h(
-          NPopconfirm,
-          {
-            onPositiveClick: () => handleDelete(row),
-          },
-          {
-            default: () => '确认删除吗?',
-            trigger: () => {
-              return h(
-                NButton,
-                {
-                  strong: true,
-                  secondary: true,
-                  size: 'tiny',
-                  type: 'error',
+      return h(
+        NSpace,
+        {},
+        {
+          default: () => [
+            h(NButton,
+              {
+                strong: true,
+                secondary: true,
+                size: 'tiny',
+                onClick: () => {
+                  router.push(`/notes/write?id=${row.id}`)
                 },
-                { default: () => '删除' },
-              )
-            },
-          },
-        )
-      }
-      else {
-        return h(
-          NButton,
-          {
-            strong: true,
-            secondary: true,
-            size: 'tiny',
-            type: 'info',
-            onClick: () => handleDelete(row),
-          },
-          { default: () => '恢复' },
-        )
-      }
+                type: 'tertiary',
+              },
+              { default: () => '编辑' }),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleDelete(row),
+              },
+              {
+                default: () => '确认删除吗?',
+                trigger: () => {
+                  return h(
+                    NButton,
+                    {
+                      strong: true,
+                      secondary: true,
+                      size: 'tiny',
+                      type: 'error',
+                    },
+                    { default: () => '删除' },
+                  )
+                },
+              }),
+          ],
+        },
+      )
     },
   },
 ]

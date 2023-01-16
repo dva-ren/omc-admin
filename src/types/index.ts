@@ -152,3 +152,27 @@ export interface SystemState {
   uv: number
   todayIpAccessCount: number
 }
+
+/**
+ * 评论
+ */
+export interface Comment {
+  id: string
+  ref: string
+  refType: string
+  author: string
+  mail: string
+  url: string
+  content: string
+  parent: string
+  sendIp: string
+  commentsIndex: number
+  key: string
+  location: string
+  isWhispers: number
+  avatar: string
+  children: Comment[]
+  status: number
+  createTime: string
+  updateTime: string
+}

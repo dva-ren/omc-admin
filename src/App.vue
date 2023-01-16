@@ -14,6 +14,7 @@ import {
 import {
   Hash,
   Message2,
+  MessageCircle,
   Pencil,
 } from '@vicons/tabler'
 import { useMainStore } from './store'
@@ -104,6 +105,12 @@ const menuOptions: MenuOption[] = [
         icon: renderIcon(Pencil),
       },
     ],
+  },
+  {
+    label: '评论',
+    key: 'comment',
+    icon: renderIcon(MessageCircle),
+    href: '/comment',
   },
   {
     label: '说点什么',
