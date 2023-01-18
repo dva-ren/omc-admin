@@ -6,6 +6,7 @@ import type { FormInst, UploadCustomRequestOptions, UploadFileInfo } from 'naive
 import { useMessage } from 'naive-ui'
 
 import { addNote, queryNote, updateNote } from '~/api'
+import type { NoteForm } from '~/types'
 
 const route = useRoute()
 const id = computed(() => route.query.id as string)
@@ -21,8 +22,9 @@ const customCreateTime = reactive({
 const message = useMessage()
 const formInstRef = ref(null)
 const previewImage = ref(false)
+const processing = ref(false)
 
-const initValue = {
+const initValue: NoteForm = {
   title: '',
   content: '',
   mood: undefined,
@@ -34,8 +36,9 @@ const initValue = {
   cover: '',
   publishTime: undefined,
   createTime: undefined,
+  musicId: undefined,
 }
-const noteForm = ref(initValue)
+const noteForm = ref<NoteForm>(initValue)
 
 const getArticle = async () => {
   if (id.value) {
@@ -179,6 +182,7 @@ const handleAdd = async () => {
     message.info('要选择天气和心情哟')
     return
   }
+  processing.value = true
   if (id.value) {
     const res = await updateNote(id.value, { ...unref(noteForm), createTime: customCreateTime.flag ? customCreateTime.value : undefined })
     if (res.code === 200)
@@ -189,6 +193,7 @@ const handleAdd = async () => {
     if (res.code === 200)
       message.success('添加成功')
   }
+  processing.value = false
 }
 watch(id, () => {
   if (id.value)
@@ -219,7 +224,7 @@ watch(id, () => {
             </template>
           </n-button>
           <!-- 发布按钮 -->
-          <n-button type="success" circle size="large" @click="handleAdd">
+          <n-button type="success" circle size="large" :loading="processing" @click="handleAdd">
             <template #icon>
               <n-icon><PaperPlane /></n-icon>
             </template>
@@ -288,6 +293,9 @@ watch(id, () => {
           </n-form-item>
           <n-form-item label="位置" path="position">
             <n-input v-model:value="noteForm.position" type="text" placeholder="选个位置" />
+          </n-form-item>
+          <n-form-item label="音乐" path="position">
+            <n-input v-model:value="noteForm.musicId" type="text" placeholder="网易云音乐id" />
           </n-form-item>
           <n-form-item label="公开时间" path="publishTime">
             <n-date-picker

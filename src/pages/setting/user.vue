@@ -50,7 +50,11 @@ const rules: FormRules = {
     },
   ],
 }
-const master = mainStore.master
+const master = reactive<Master>(mainStore.master)
+
+watch(() => mainStore.master, () => {
+  Object.assign(master, mainStore.master)
+})
 
 const options = [
   {

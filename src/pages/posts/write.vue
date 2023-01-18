@@ -18,6 +18,8 @@ const customCreateTime = reactive({
   value: Date.now(),
   publishTime: null,
 })
+const processing = ref(false)
+
 const initValue: ArticleForm = {
   title: '',
   content: '',
@@ -69,7 +71,9 @@ const handleAdd = async () => {
   const form = unref(articleForm)
   if (customCreateTime.flag)
     form.createTime = customCreateTime.value.toString()
-  form.label = form.label ? JSON.stringify(form.label) : ''
+  // form.label = form.label ? JSON.stringify(form.label) : ''
+  form.label = ''
+  processing.value = true
   if (id.value) {
     const res = await updateArticle(id.value, form)
     if (res.code === 200)
@@ -84,6 +88,7 @@ const handleAdd = async () => {
     else
       message.error(res.msg)
   }
+  processing.value = false
 }
 
 const onBeforeUpload = (data: {
@@ -150,7 +155,7 @@ watch(id, () => {
             </template>
           </n-button>
           <!-- 发布按钮 -->
-          <n-button type="success" circle size="large" @click="handleAdd">
+          <n-button type="success" circle size="large" :loading="processing" @click="handleAdd">
             <template #icon>
               <n-icon><PaperPlane /></n-icon>
             </template>

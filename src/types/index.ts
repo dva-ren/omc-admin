@@ -41,6 +41,7 @@ export interface ArticleForm {
   cover?: string
   isTop: number
   status: number
+  socialIds: Array<{ key: string; value: string | number }>
   allowComment: number
   createTime?: string
 }
@@ -63,8 +64,7 @@ export interface Article {
   updateTime: string
   isDelete: number
 }
-
-export interface Note {
+export interface NoteForm {
   id: string
   title: string
   summary: string
@@ -77,13 +77,16 @@ export interface Note {
   musicId: string
   isTop: number
   status: number
+  allowComment: number
+  publishTime: string
+  createTime: string
+}
+
+export interface Note {
   commentCount: number
   viewCount: number
-  allowComment: number
-  createTime: string
   updateTime: string
   isDelete: number
-  publishTime: string
 }
 
 export interface Category {

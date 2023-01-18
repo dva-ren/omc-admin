@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { getMaster } from '~/api'
+import type { Master } from '~/types'
 
 export const useMainStore = defineStore('main', {
   state() {
@@ -17,11 +18,8 @@ export const useMainStore = defineStore('main', {
         createTime: '',
         updateTime: '',
         url: '',
-        socialIds: [{
-          key: 'bilibili',
-          value: '1111',
-        }],
-      },
+        socialIds: [],
+      } as Master,
       isLogin: false,
     }
   },
@@ -31,6 +29,7 @@ export const useMainStore = defineStore('main', {
       if (res.code === 200) {
         this.master = res.data
         this.isLogin = true
+        this.master.socialIds = res.data.socialIds || []
       }
       else if (res.code === 405) {
         localStorage.removeItem('token')
