@@ -155,7 +155,7 @@ watch(id, () => {
             </template>
           </n-button>
           <!-- 发布按钮 -->
-          <n-button type="success" circle size="large" :loading="processing" @click="handleAdd">
+          <n-button type="success" circle size="large" :loading="processing" :disabled="processing" @click="handleAdd">
             <template #icon>
               <n-icon><PaperPlane /></n-icon>
             </template>

@@ -7,6 +7,7 @@ import { useMainStore } from '~/store'
 
 const emailReg = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 const message = useMessage()
+const processing = ref(false)
 
 const mainStore = useMainStore()
 
@@ -122,12 +123,14 @@ const onRemove = (idx: number) => {
   console.log(idx, master.socialIds)
 }
 const handleSave = async () => {
-  console.log(master)
+  processing.value = true
+  master.socialIds = undefined
   const res = await updateMaster(master)
   if (res.code === 200)
     message.success('修改成功')
   else
     message.error(res.msg)
+  processing.value = false
 }
 </script>
 
@@ -149,7 +152,7 @@ const handleSave = async () => {
       <div text-sm text-gray>
         {{ rowData.lastLoginIp }}
       </div>
-      <n-button strong round type="primary" mt-4 @click="handleSave">
+      <n-button strong round type="primary" mt-4 :loading="processing" :disabled="processing" @click="handleSave">
         保存更改
       </n-button>
     </div>
