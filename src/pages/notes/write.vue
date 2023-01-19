@@ -239,7 +239,7 @@ watch(id, () => {
         type="textarea"
         placeholder="内容"
         show-count
-        h-100
+        h-60vh
       />
     </n-space>
     <n-drawer v-model:show="active" width="100%" style="max-width: 480px;">

@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import type { Component } from 'vue'
 import { h, ref } from 'vue'
-import { NIcon, NText, dateZhCN, zhCN } from 'naive-ui'
+import { NIcon, dateZhCN, zhCN } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
   BookOutline,
@@ -23,7 +23,7 @@ const collapsed = ref(false)
 
 ;(() => {
   if (isDark)
-    toggleDark()
+    toggleDark(false)
   if (document.documentElement.clientWidth < 600)
     collapsed.value = true
   useMainStore().init()

@@ -49,13 +49,13 @@ onMounted(() => {
       ref="editorRef"
       :model-value="modelValue"
       :theme="isDark ? 'dark' : 'light'"
-      style="height: 80vh;"
+      style="height: calc(100vh-10rem);"
       :preview="preview"
       @change="onChange"
       @on-upload-img="handleUploadImg"
       @save="handleSave"
     />
-    <n-space p-4>
+    <n-space p-4 justify="end">
       <n-button strong secondary type="success" @click="switchPreview">
         {{ preview ? '关闭' : '打开' }}预览
       </n-button>
