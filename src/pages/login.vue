@@ -18,7 +18,7 @@ const handleLogin = async () => {
   const res = await login(loginForm.password)
   if (res.code === 200) {
     localStorage.setItem('token', res.token!)
-    useMainStore().isLogin = true
+    useMainStore().init()
     message.success('登录成功')
     router.replace('/dashboard')
   }

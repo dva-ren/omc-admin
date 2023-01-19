@@ -149,7 +149,6 @@ const createColumns = (): DataTableColumns<Note> => [
       :columns="createColumns()"
       :data="notes"
       :pagination="pagination"
-      :max-height="250"
       :row-key="rowKey"
       :loading="loadding"
       row-class-name="table-row"

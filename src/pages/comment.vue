@@ -167,7 +167,6 @@ const createColumns = (): DataTableColumns<Comment> => [
       :columns="createColumns()"
       :data="comments"
       :pagination="pagination"
-      :max-height="250"
       :row-key="rowKey"
       :loading="loadding"
       row-class-name="table-row"

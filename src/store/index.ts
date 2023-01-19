@@ -25,6 +25,9 @@ export const useMainStore = defineStore('main', {
   },
   actions: {
     async init() {
+      const token = localStorage.getItem('token')
+      if (!token)
+        return
       const res = await getMaster()
       if (res.code === 200) {
         this.master = res.data
@@ -34,6 +37,7 @@ export const useMainStore = defineStore('main', {
       else if (res.code === 405) {
         localStorage.removeItem('token')
         this.isLogin = false
+        location.reload()
       }
     },
   },
