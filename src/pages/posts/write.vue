@@ -28,7 +28,7 @@ const initValue: ArticleForm = {
   isTop: 0,
   allowComment: 1,
   cover: '',
-  createTime: '',
+  createTime: undefined,
   status: 0,
 }
 const articleForm = ref(initValue)
@@ -70,7 +70,7 @@ const handleAdd = async () => {
   }
   const form = unref(articleForm)
   if (customCreateTime.flag)
-    form.createTime = customCreateTime.value.toString()
+    form.createTime = customCreateTime.value
   // form.label = form.label ? JSON.stringify(form.label) : ''
   form.label = ''
   processing.value = true
