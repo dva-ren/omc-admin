@@ -9,7 +9,21 @@ import { dateFns, emptyValue } from '~/composables'
 
 const says = ref<Array<Say>>([])
 const loadding = ref(true)
-const pagination = reactive({ pageSize: 20 })
+const pagination = reactive({
+  page: 1,
+  pageSize: 20,
+  showSizePicker: true,
+  pageSizes: [20, 30, 50],
+  itemCount: 0,
+  onChange: (page: number) => {
+    pagination.page = page
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize
+    pagination.page = 1
+  },
+  prefix: () => `共${pagination.itemCount}条记录`,
+})
 const message = useMessage()
 const showModal = ref(false)
 const formInstRef = ref<FormInst | null>(null)
@@ -29,10 +43,13 @@ const resetForm = () => {
 const getSays = async () => {
   loadding.value = true
   const res = await querySayList()
+  pagination.itemCount = res.data.total
   says.value = res.data.list
   loadding.value = false
 }
-getSays()
+watch(pagination, () => {
+  getSays()
+}, { immediate: true })
 
 const rowKey = (row: Say) => row.id
 
@@ -228,6 +245,7 @@ const createColumns = (): DataTableColumns<Say> => [
       :row-key="rowKey"
       :loading="loadding"
       row-class-name="table-row"
+      :scroll-x="100"
       width="100"
     />
   </div>

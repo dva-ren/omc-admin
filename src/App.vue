@@ -5,6 +5,7 @@ import { h, ref } from 'vue'
 import { NIcon, dateZhCN, zhCN } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
+  BarChartOutline,
   BookOutline,
   CodeSlashOutline,
   DiscOutline,
@@ -117,6 +118,12 @@ const menuOptions: MenuOption[] = [
     key: 'says',
     icon: renderIcon(Message2),
     href: '/says',
+  },
+  {
+    label: '数据',
+    key: 'analyze',
+    icon: renderIcon(BarChartOutline),
+    href: '/analyze',
   },
   {
     label: '设定',

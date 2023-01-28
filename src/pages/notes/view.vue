@@ -10,19 +10,36 @@ import { useMainStore } from '~/store'
 
 const notes = ref<Array<Note>>([])
 const loadding = ref(true)
-const pagination = reactive({ pageSize: 20 })
+const pagination = reactive({
+  page: 1,
+  pageSize: 15,
+  showSizePicker: true,
+  pageSizes: [15, 20, 30],
+  itemCount: 0,
+  onChange: (page: number) => {
+    pagination.page = page
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize
+    pagination.page = 1
+  },
+  prefix: () => `共${pagination.itemCount}条记录`,
+})
 const message = useMessage()
 const website = useMainStore().master.url
 const router = useRouter()
 
-const getArticles = async () => {
+const getNotes = async () => {
   loadding.value = true
-  const res = await queryNoteList()
+  const res = await queryNoteList(pagination.page, pagination.pageSize)
+  pagination.itemCount = res.data.total
   notes.value = res.data.list
   // console.log(res)
   loadding.value = false
 }
-getArticles()
+watch(pagination, () => {
+  getNotes()
+}, { immediate: true })
 
 const rowKey = (row: Note) => row.id
 
@@ -30,7 +47,7 @@ const handleDelete = async (row: Note) => {
   const res = await deleteNote(row.id)
   if (res.code === 200) {
     message.success('删除成功')
-    getArticles()
+    getNotes()
   }
   else {
     message.error('未知错误，删除失败')
@@ -151,6 +168,7 @@ const createColumns = (): DataTableColumns<Note> => [
       :pagination="pagination"
       :row-key="rowKey"
       :loading="loadding"
+      :scroll-x="100"
       row-class-name="table-row"
     />
   </div>

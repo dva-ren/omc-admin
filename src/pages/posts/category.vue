@@ -218,6 +218,7 @@ const createColumns = (): DataTableColumns<Category> => [
       :row-key="rowKey"
       :loading="loadding"
       row-class-name="table-row"
+      :scroll-x="100"
       width="100"
     />
   </div>

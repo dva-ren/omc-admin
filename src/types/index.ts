@@ -179,3 +179,44 @@ export interface Comment {
   createTime: string
   updateTime: string
 }
+
+export interface Log {
+  id: string
+  path: string
+  ip: string
+  ua: string
+  createTime: string
+}
+
+export interface IP {
+  code: number
+  msg: string
+  ipinfo: Ipinfo
+  ipdata: Ipdata
+  adcode: Adcode
+  tips: string
+  time: number
+}
+
+interface Adcode {
+  o: string
+  p: string
+  c: string
+  n: string
+  r: string
+  a: string
+  i: boolean
+}
+
+interface Ipdata {
+  info1: string
+  info2: string
+  info3: string
+  isp: string
+}
+
+interface Ipinfo {
+  type: string
+  text: string
+  cnip: boolean
+}

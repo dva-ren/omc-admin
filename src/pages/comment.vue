@@ -10,7 +10,23 @@ const route = useRoute()
 const router = useRouter()
 const comments = ref<Array<Comment>>([])
 const loadding = ref(true)
-const pagination = reactive({ pageSize: 20 })
+
+const pagination = reactive({
+  page: 1,
+  pageSize: 15,
+  showSizePicker: true,
+  pageSizes: [15, 20, 50],
+  itemCount: 0,
+  onChange: (page: number) => {
+    pagination.page = page
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize
+    pagination.page = 1
+  },
+  prefix: () => `共${pagination.itemCount}条记录`,
+})
+
 const message = useMessage()
 const status = computed(() => Number(route.query.status) || 0)
 const processing = ref(false)
@@ -21,11 +37,14 @@ const view = reactive({
 
 const getComments = async () => {
   loadding.value = true
-  const res = await queryComment(status.value)
+  const res = await queryComment(status.value, pagination.page, pagination.pageSize)
   comments.value = res.data.list
+  pagination.itemCount = res.data.total
   loadding.value = false
 }
 watch(status, () => {
+  pagination.page = 1
+  pagination.pageSize = 15
   getComments()
 }, { immediate: true })
 

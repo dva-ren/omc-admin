@@ -1,5 +1,8 @@
+import axios from 'axios'
 import http from '~/composables/requests'
-import type { AsyncResponse, Master, MasterForm, SystemState } from '~/types'
+import type { AsyncResponse, Log, Master, MasterForm, PageInfo, SystemState } from '~/types'
+
+type LogListResult = AsyncResponse<PageInfo<Log>>
 
 /**
  * 登录
@@ -61,4 +64,19 @@ export const querySystemState = (): AsyncResponse<SystemState> => {
     url: '/state',
     method: 'GET',
   })
+}
+/**
+ * 获取api请求日志
+ * @returns 日志
+ *
+ */
+export const queryLogList = (pageNum = 1, pageSize = 20): LogListResult => {
+  return http.request({
+    url: `/log?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: 'GET',
+  })
+}
+
+export const queryIpInfo = (ip: string) => {
+  return axios.get(`https://api.vore.top/api/IPdata?ip=${ip}`)
 }

@@ -9,17 +9,34 @@ import { useMainStore } from '~/store'
 
 const articles = ref<Array<Article>>([])
 const loadding = ref(true)
-const pagination = reactive({ pageSize: 20 })
+const pagination = reactive({
+  page: 1,
+  pageSize: 15,
+  showSizePicker: true,
+  pageSizes: [15, 20, 50],
+  itemCount: 0,
+  onChange: (page: number) => {
+    pagination.page = page
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize
+    pagination.page = 1
+  },
+  prefix: () => `共${pagination.itemCount}条记录`,
+})
 const message = useMessage()
 const website = useMainStore().master.url
 const router = useRouter()
 
 const getArticles = async () => {
-  const res = await queryArticleList()
+  const res = await queryArticleList(pagination.page, pagination.pageSize)
+  pagination.itemCount = res.data.total
   articles.value = res.data.list
   loadding.value = false
 }
-getArticles()
+watch(pagination, () => {
+  getArticles()
+}, { immediate: true })
 
 const rowKey = (row: Article) => row.id
 
@@ -140,6 +157,7 @@ const createColumns = (): DataTableColumns<Article> => [
       :row-key="rowKey"
       :loading="loadding"
       row-class-name="table-row"
+      :scroll-x="100"
       width="100"
     />
   </div>
