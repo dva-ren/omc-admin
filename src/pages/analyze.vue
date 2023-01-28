@@ -15,11 +15,13 @@ interface Logger extends Log {
   cpu: string
 }
 const pagination = reactive({
-  page: 2,
+  page: 1,
   pageSize: 30,
+  itemCount: 0,
   showSizePicker: true,
   pageSizes: [15, 30, 50],
   pageCount: 1,
+  prefix: () => `共${pagination.itemCount}条记录`,
   onChange: (page: number) => {
     pagination.page = page
   },
@@ -32,8 +34,9 @@ const loading = ref(false)
 
 const logList = ref<Logger[]>([])
 
-const getLogs = async () => {
-  const res = await queryLogList(pagination.page, pagination.pageSize)
+const getLogs = async (pageNum: number, pageSize: number) => {
+  const res = await queryLogList(pageNum, pageSize)
+  pagination.itemCount = res.data.total
   logList.value = res.data.list.map((log) => {
     const ua = UaParser(log.ua)
     return {
@@ -101,9 +104,9 @@ const createColumns = (): DataTableColumns<Logger> => [
     render: row => emptyValue(row.ua),
   },
 ]
-watch(pagination, () => {
-  getLogs()
-}, { immediate: true })
+watchEffect(() => {
+  getLogs(pagination.page, pagination.pageSize)
+})
 </script>
 
 <template>

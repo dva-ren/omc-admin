@@ -40,16 +40,16 @@ const resetForm = () => {
   sayForm.author = ''
   sayForm.origin = ''
 }
-const getSays = async () => {
+const getSays = async (pageNum: number, pageSize: number) => {
   loadding.value = true
-  const res = await querySayList()
+  const res = await querySayList(pageNum, pageSize)
   pagination.itemCount = res.data.total
   says.value = res.data.list
   loadding.value = false
 }
-watch(pagination, () => {
-  getSays()
-}, { immediate: true })
+watchEffect(() => {
+  getSays(pagination.page, pagination.pageSize)
+})
 
 const rowKey = (row: Say) => row.id
 
@@ -57,7 +57,7 @@ const handleDelete = async (row: Say) => {
   const res = await deleteSay(row.id)
   if (res.code === 200) {
     message.success('删除成功')
-    getSays()
+    getSays(pagination.page, pagination.pageSize)
   }
   else { message.error('删除失败') }
 }
@@ -76,7 +76,7 @@ const onPositiveClick = async () => {
             resetForm()
             message.success('修改成功')
             showModal.value = false
-            getSays()
+            getSays(pagination.page, pagination.pageSize)
           }
         }
         else {
@@ -85,7 +85,7 @@ const onPositiveClick = async () => {
             resetForm()
             message.success('添加成功')
             showModal.value = false
-            getSays()
+            getSays(pagination.page, pagination.pageSize)
           }
         }
       }
