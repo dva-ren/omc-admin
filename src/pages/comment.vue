@@ -2,7 +2,7 @@
 import type { DataTableColumns } from 'naive-ui'
 import { NButton, NGradientText, NPopconfirm } from 'naive-ui'
 import type { Comment, Note } from '~/types'
-
+import IpInfo from '~/components/IpInfo.vue'
 import { changeCommentStatus, deleteComment, queryComment } from '~/api'
 
 import { dateFns, emptyValue } from '~/composables'
@@ -131,6 +131,12 @@ const createColumns = (): DataTableColumns<Comment> => [
     render: row => dateFns(row.createTime).fromNow(),
   },
   {
+    title: 'IP',
+    width: 80,
+    key: '',
+    render: row => h(IpInfo, { ip: row.sendIp }),
+  },
+  {
     title: 'ip归属',
     width: 80,
     key: 'location',
@@ -211,7 +217,7 @@ const createColumns = (): DataTableColumns<Comment> => [
           {{ view.comment.createTime }}
         </n-descriptions-item>
         <n-descriptions-item label="IP">
-          {{ view.comment.sendIp }}
+          <IpInfo :ip="view.comment.sendIp" />
         </n-descriptions-item>
         <n-descriptions-item label="位置">
           {{ emptyValue(view.comment.location) }}

@@ -29,7 +29,9 @@ const queryIp = async (show: boolean) => {
     :delay="500"
   >
     <template #trigger>
-      <span text-green-6>{{ ip }}</span>
+      <div v-bind="$attrs" text-green-6>
+        {{ ip }}
+      </div>
     </template>
     <div>
       {{ text }}

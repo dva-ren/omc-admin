@@ -70,9 +70,21 @@ export const querySystemState = (): AsyncResponse<SystemState> => {
  * @returns 日志
  *
  */
-export const queryLogList = (pageNum = 1, pageSize = 20): LogListResult => {
+export const queryLogList = (pageNum = 1, pageSize = 20, ip?: string): LogListResult => {
   return http.request({
-    url: `/log?pageNum=${pageNum}&pageSize=${pageSize}`,
+    url: `/log?pageNum=${pageNum}&pageSize=${pageSize}${ip ? (`&ip=${ip}`) : ''}`,
+    method: 'GET',
+  })
+}
+
+/**
+ * 获取今日访问的ip列表
+ * @returns ips
+ *
+ */
+export const queryIps = (): AsyncResponse<Array<string>> => {
+  return http.request({
+    url: '/log/ips',
     method: 'GET',
   })
 }

@@ -6,7 +6,7 @@ import IpInfo from '~/components/IpInfo.vue'
 
 import type { Log } from '~/types'
 import { dateFns } from '~/composables'
-import { queryLogList } from '~/api'
+import { queryIps, queryLogList } from '~/api'
 
 interface Logger extends Log {
   device: string
@@ -33,9 +33,12 @@ const pagination = reactive({
 const loading = ref(false)
 
 const logList = ref<Logger[]>([])
+const ips = ref<Array<String>>([])
+const text = ref('')
+const searchIp = ref('')
 
 const getLogs = async (pageNum: number, pageSize: number) => {
-  const res = await queryLogList(pageNum, pageSize)
+  const res = await queryLogList(pageNum, pageSize, searchIp.value)
   pagination.itemCount = res.data.total
   logList.value = res.data.list.map((log) => {
     const ua = UaParser(log.ua)
@@ -48,12 +51,26 @@ const getLogs = async (pageNum: number, pageSize: number) => {
     }
   })
 }
+const getIps = async () => {
+  const res = await queryIps()
+  ips.value = res.data
+}
+
+const handleSearch = () => {
+  pagination.page = 1
+  searchIp.value = text.value
+  if (!searchIp.value)
+    return
+  getLogs(pagination.page, pagination.pageSize)
+  getIps()
+}
+
 const createColumns = (): DataTableColumns<Logger> => [
   {
     title: '时间',
     key: 'createTime',
     width: 100,
-    render: row => dateFns(row.createTime).format('DD/MM hh:mm'),
+    render: row => dateFns(row.createTime).format('DD/MM HH:mm:ss'),
   },
   {
     title: 'IP',
@@ -106,7 +123,12 @@ const createColumns = (): DataTableColumns<Logger> => [
 ]
 watchEffect(() => {
   getLogs(pagination.page, pagination.pageSize)
+  getIps()
 })
+const refresh = () => {
+  getLogs(pagination.page, pagination.pageSize)
+  getIps()
+}
 </script>
 
 <template>
@@ -117,11 +139,30 @@ watchEffect(() => {
       </div>
       <div>
         <!-- 刷新按钮 -->
-        <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="getLogs">
+        <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="refresh">
           <template #icon>
             <n-icon><ReloadOutline /></n-icon>
           </template>
         </NButton>
+      </div>
+    </div>
+    <div flex justify-between flex-col sm:flex-row>
+      <div>近两日访问ip</div>
+      <n-input-group w-80 py-1>
+        <n-input v-model:value="text" :style="{ width: '18rem' }" placeholder="过滤ip" />
+        <n-button type="primary" ghost @click="handleSearch">
+          搜索
+        </n-button>
+      </n-input-group>
+    </div>
+    <div mb-4>
+      <div v-if="ips.length" flex flex-wrap gap-1>
+        <div v-for="ip in ips" :key="ip">
+          <IpInfo :ip="ip" class="border border-red rounded-full " text="12px" p-1 style="border: 1px solid #3333;" />
+        </div>
+      </div>
+      <div v-else>
+        暂无
       </div>
     </div>
     <n-data-table
