@@ -38,19 +38,26 @@ const text = ref('')
 const searchIp = ref('')
 
 const getLogs = async (pageNum: number, pageSize: number) => {
-  const res = await queryLogList(pageNum, pageSize, searchIp.value)
-  pagination.itemCount = res.data.total
-  logList.value = res.data.list.map((log) => {
-    const ua = UaParser(log.ua)
-    return {
-      ...log,
-      browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
-      device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
-      os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
-      cpu: ua.cpu.architecture || '-',
-    }
-  })
+  loading.value = true
+  try {
+    const res = await queryLogList(pageNum, pageSize, searchIp.value)
+    pagination.itemCount = res.data.total
+    logList.value = res.data.list.map((log) => {
+      const ua = UaParser(log.ua)
+      return {
+        ...log,
+        browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
+        device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
+        os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
+        cpu: ua.cpu.architecture || '-',
+      }
+    })
+  }
+  finally {
+    loading.value = false
+  }
 }
+
 const getIps = async () => {
   const res = await queryIps()
   ips.value = res.data
@@ -126,8 +133,8 @@ watchEffect(() => {
   getIps()
 })
 const refresh = () => {
+  pagination.page = 1
   getLogs(pagination.page, pagination.pageSize)
-  getIps()
 }
 </script>
 
