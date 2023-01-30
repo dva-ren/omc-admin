@@ -65,6 +65,7 @@ const getIps = async () => {
 
 const handleSearch = () => {
   pagination.page = 1
+  text.value = text.value.trim()
   searchIp.value = text.value
   if (!searchIp.value)
     return
@@ -165,7 +166,7 @@ const refresh = () => {
     <div mb-4>
       <div v-if="ips.length" flex flex-wrap gap-1>
         <div v-for="ip in ips" :key="ip">
-          <IpInfo :ip="ip" class="border border-red rounded-full " text="12px" p-1 style="border: 1px solid #3333;" />
+          <IpInfo :ip="ip" class="border border-red rounded-full " text="12px" p-1.5 style="border: 1px solid #3333;" />
         </div>
       </div>
       <div v-else>

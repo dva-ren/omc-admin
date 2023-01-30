@@ -132,6 +132,24 @@ watch(id, () => {
     getCategory()
   }
 }, { immediate: true })
+
+onBeforeRouteLeave((to, from, next) => {
+  if (articleForm.value.content) {
+    if (!window.confirm('当前内容可能还未保存，是否离开'))
+      return
+  }
+  next()
+})
+
+onMounted(() => {
+  window.onbeforeunload = (e) => {
+    if (articleForm.value.content)
+      e.returnValue = '当前内容可能还未保存，是否离开'
+  }
+})
+onBeforeUnmount(() => {
+  window.onbeforeunload = null
+})
 </script>
 
 <template>

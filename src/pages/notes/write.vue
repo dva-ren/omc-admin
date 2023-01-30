@@ -40,7 +40,7 @@ const initValue: NoteForm = {
 }
 const noteForm = ref<NoteForm>(initValue)
 
-const getArticle = async () => {
+const getNotes = async () => {
   if (id.value) {
     show.value = true
     const res = await queryNote(id.value)
@@ -197,10 +197,28 @@ const handleAdd = async () => {
 }
 watch(id, () => {
   if (id.value)
-    getArticle()
+    getNotes()
   else
     noteForm.value = initValue
 }, { immediate: true })
+
+onBeforeRouteLeave((to, from, next) => {
+  if (noteForm.value.content) {
+    if (!window.confirm('当前内容可能还未保存，是否离开'))
+      return
+  }
+  next()
+})
+
+onMounted(() => {
+  window.onbeforeunload = (e) => {
+    if (noteForm.value.content)
+      e.returnValue = '当前内容可能还未保存，是否离开'
+  }
+})
+onBeforeUnmount(() => {
+  window.onbeforeunload = null
+})
 </script>
 
 <template>
