@@ -5,6 +5,7 @@ import type { UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui'
 import type { ArticleForm } from '~/types'
 
 import { addArticle, queryArticle, queryCategoryList, updateArticle } from '~/api'
+import { randomImageUrl } from '~/composables'
 
 const route = useRoute()
 const id = computed(() => route.query.id as string)
@@ -69,6 +70,8 @@ const handleAdd = async () => {
     return
   }
   const form = unref(articleForm)
+  if (!form.cover)
+    form.cover = randomImageUrl()
   if (customCreateTime.flag)
     form.createTime = customCreateTime.value
   // form.label = form.label ? JSON.stringify(form.label) : ''

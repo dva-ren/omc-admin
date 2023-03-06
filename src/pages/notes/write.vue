@@ -6,6 +6,7 @@ import type { FormInst, UploadCustomRequestOptions, UploadFileInfo } from 'naive
 import { useMessage } from 'naive-ui'
 
 import { addNote, queryNote, updateNote } from '~/api'
+import { randomImageUrl } from '~/composables'
 import type { NoteForm } from '~/types'
 
 const route = useRoute()
@@ -183,6 +184,8 @@ const handleAdd = async () => {
     return
   }
   processing.value = true
+  if (!noteForm.value.cover)
+    noteForm.value.cover = randomImageUrl()
   if (id.value) {
     const res = await updateNote(id.value, { ...unref(noteForm), createTime: customCreateTime.flag ? customCreateTime.value : undefined })
     if (res.code === 200)
