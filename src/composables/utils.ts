@@ -1,5 +1,5 @@
-import type { IP } from '~/types'
 import images from './images.json'
+import type { IP } from '~/types'
 
 export const emptyValue = (s: string | undefined) => {
   return s || '-'
@@ -12,5 +12,5 @@ export function randomNumber(min: number, max: number) {
 }
 
 export function randomImageUrl() {
-  return images[randomNumber(0,images.length)]
+  return images.ai[randomNumber(0, images.ai.length)]
 }
