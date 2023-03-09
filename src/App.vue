@@ -10,6 +10,7 @@ import {
   CodeSlashOutline,
   DiscOutline,
   EyeSharp,
+  ImageOutline,
   SettingsOutline,
 } from '@vicons/ionicons5'
 import {
@@ -118,6 +119,12 @@ const menuOptions: MenuOption[] = [
     key: 'says',
     icon: renderIcon(Message2),
     href: '/says',
+  },
+  {
+    label: '照片墙',
+    key: 'picture',
+    icon: renderIcon(ImageOutline),
+    href: '/picture',
   },
   {
     label: '数据',

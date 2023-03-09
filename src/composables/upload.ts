@@ -1,9 +1,30 @@
 import client from './client'
 
+function getImageSize(file: File) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.includes('image')) {
+      resolve({})
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.src = e.target!.result as string
+      img.onload = () => {
+        resolve({
+          width: img.width,
+          height: img.height,
+        })
+      }
+    }
+    reader.readAsDataURL(file)
+  })
+}
 // 上传文件
-export function upload(filePath: string, file: File): Promise<any> {
+export async function upload(filePath: string, file: File): Promise<any> {
   if (!filePath.endsWith('/'))
     filePath = `${filePath}/`
+  const imageInfo = await getImageSize(file)
   return new Promise((resolve, reject) => {
     // 上传OSS
     try {
@@ -13,9 +34,13 @@ export function upload(filePath: string, file: File): Promise<any> {
       + random_string(6)
       }_${
       Date.now()
-      }.${
+      }_${
+        imageInfo.width || ''
+      }x${
+        imageInfo.height || ''
+      }_.${
       file.name ? file.name.split('.').pop() : '_null.png'}`
-      // 上传文件
+      // // 上传文件
       client.put(random_name, file).then((result) => {
         resolve(result)
       })
