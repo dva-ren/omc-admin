@@ -57,7 +57,7 @@ class HttpRequest {
       const { data } = res
       if (data?.code === 405) {
         // message.error(data?.msg)
-        message.error('登录失效啦')
+        message.error('登录失效,请重新登录')
         localStorage.removeItem('token')
         return Promise.reject(data)
       }

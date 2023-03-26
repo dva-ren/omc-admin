@@ -82,7 +82,7 @@ export interface NoteForm {
   createTime: string
 }
 
-export interface Note {
+export interface Note extends NoteForm {
   commentCount: number
   viewCount: number
   updateTime: string

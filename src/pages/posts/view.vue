@@ -63,7 +63,7 @@ const createColumns = (): DataTableColumns<Article> => [
         {
           href: `${website.endsWith('/') ? website : `${website}/`}posts/${row.id}`,
           target: '_blank',
-          class: 'link',
+          class: row.status === 1 ? 'is-hide' : 'link',
         },
         { default: () => row.title },
       )

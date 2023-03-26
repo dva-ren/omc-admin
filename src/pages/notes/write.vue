@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { PaperPlane, SettingsOutline } from '@vicons/ionicons5'
+import { LocationOutline, PaperPlane, SettingsOutline } from '@vicons/ionicons5'
 import { Hash } from '@vicons/tabler'
 
 import type { FormInst, UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 
-import { addNote, queryNote, updateNote } from '~/api'
+import { addNote, queryLocation, queryNote, updateNote } from '~/api'
 import { randomImageUrl } from '~/composables'
 import type { NoteForm } from '~/types'
 
@@ -198,6 +198,17 @@ const handleAdd = async () => {
   }
   processing.value = false
 }
+const getLocation = () => {
+  navigator.geolocation.getCurrentPosition((e) => {
+    queryLocation(e.coords.latitude, e.coords.longitude).then((res) => {
+      console.log('res', res)
+      // noteForm.value.position = res.data.data.address
+    }).catch(() => {
+      message.error('位置信息获取失败')
+    })
+  })
+}
+
 watch(id, () => {
   if (id.value)
     getNotes()
@@ -287,7 +298,7 @@ onBeforeUnmount(() => {
               clearable
               :options="moodOptions"
               tag
-              placeholder="天天都要开心呀"
+              placeholder="生命苦短，开心最重要"
               @create="handleCreate"
             />
           </n-form-item>
@@ -298,7 +309,7 @@ onBeforeUnmount(() => {
               clearable
               :options="weatherOptions"
               tag
-              placeholder="今天天气好吗"
+              placeholder="今天有抬头看看天吗"
               @create="handleCreate"
             />
           </n-form-item>
@@ -313,10 +324,17 @@ onBeforeUnmount(() => {
             <n-switch v-model:value="noteForm.isTop" :checked-value="1" :unchecked-value="0" />
           </n-form-item>
           <n-form-item label="位置" path="position">
-            <n-input v-model:value="noteForm.position" type="text" placeholder="选个位置" />
+            <n-button-group>
+              <n-button round @click="getLocation">
+                <template #icon>
+                  <n-icon><LocationOutline /></n-icon>
+                </template>
+              </n-button>
+              <n-input v-model:value="noteForm.position" type="text" placeholder="发生在哪里" />
+            </n-button-group>
           </n-form-item>
           <n-form-item label="音乐" path="position">
-            <n-input v-model:value="noteForm.musicId" type="text" placeholder="网易云音乐id" />
+            <n-input v-model:value="noteForm.musicId" type="text" placeholder="网易云歌曲id" />
           </n-form-item>
           <n-form-item label="公开时间" path="publishTime">
             <n-date-picker

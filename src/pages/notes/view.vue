@@ -60,7 +60,7 @@ const createColumns = (): DataTableColumns<Note> => [
   {
     title: '标题',
     key: 'title',
-    width: 300,
+    width: 150,
     ellipsis: true,
     render: (row) => {
       return h(
@@ -68,7 +68,7 @@ const createColumns = (): DataTableColumns<Note> => [
         {
           href: `${website.endsWith('/') ? website : `${website}/`}notes/${row.id}`,
           target: '_blank',
-          class: 'link',
+          class: row.status === 1 ? 'is-hide' : 'link',
         },
         { default: () => row.title },
       )
@@ -178,6 +178,9 @@ const createColumns = (): DataTableColumns<Note> => [
 :deep(.link){
   transition: color .1s;
   color: rgba(24,160,88,0.8);
+}
+:deep(.is-hide){
+  color: pink;
 }
 :deep(.link:hover){
   color: rgba(24,160,88,1);

@@ -92,3 +92,7 @@ export const queryIps = (): AsyncResponse<Array<string>> => {
 export const queryIpInfo = (ip: string) => {
   return axios.get(`https://api.vore.top/api/IPdata?ip=${ip}`)
 }
+
+export const queryLocation = (lat: number, lng: number) => {
+  return axios.get(`https://restapi.amap.com/v3/geocode/regeo?key=46c16b26e9caec5512791d1f9ad4485f&location=${lat},${lng}`)
+}
