@@ -48,5 +48,6 @@ declare module '@vue/runtime-core' {
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TipTapEditor: typeof import('./src/components/TipTapEditor.vue')['default']
   }
 }

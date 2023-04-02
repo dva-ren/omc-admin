@@ -34,7 +34,7 @@ export async function upload(filePath: string, file: File): Promise<any> {
       + random_string(6)
       }_${
       Date.now()
-      }_${
+      }w_${
         imageInfo.width || ''
       }x${
         imageInfo.height || ''
