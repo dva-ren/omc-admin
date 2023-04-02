@@ -295,6 +295,9 @@ const createColumns = (): DataTableColumns<Picture> => [
             </n-upload-dragger>
           </n-upload>
         </n-form-item>
+        <n-form-item label="图片地址" path="url">
+          <n-input v-model:value="pictureForm.url" type="text" placeholder="上传或输入图片地址" />
+        </n-form-item>
         <n-form-item label="标签" path="labels">
           <n-input v-model:value="pictureForm.labels" type="text" placeholder="选择标签" />
         </n-form-item>
