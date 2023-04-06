@@ -6,7 +6,7 @@ import IpInfo from '~/components/IpInfo.vue'
 
 import type { Log } from '~/types'
 import { dateFns } from '~/composables'
-import { queryIps, queryLogList } from '~/api'
+import { clearIps, queryIps, queryLogList } from '~/api'
 
 interface Logger extends Log {
   device: string
@@ -33,7 +33,7 @@ const pagination = reactive({
 const loading = ref(false)
 
 const logList = ref<Logger[]>([])
-const ips = ref<Array<String>>([])
+const ips = ref<Array<string>>([])
 const text = ref('')
 const searchIp = ref('')
 
@@ -78,7 +78,7 @@ const createColumns = (): DataTableColumns<Logger> => [
     title: '时间',
     key: 'createTime',
     width: 100,
-    render: row => dateFns(row.createTime).format('DD/MM HH:mm:ss'),
+    render: row => dateFns(row.createTime).format('MM-DD HH:mm:ss'),
   },
   {
     title: 'IP',
@@ -137,6 +137,14 @@ const refresh = () => {
   pagination.page = 1
   getLogs(pagination.page, pagination.pageSize)
 }
+const handlePositiveClick = () => {
+  clearIps().then((res) => {
+    if (res.code === 200) {
+      useMessage().success('清理成功')
+      ips.value = []
+    }
+  })
+}
 </script>
 
 <template>
@@ -155,7 +163,19 @@ const refresh = () => {
       </div>
     </div>
     <div flex justify-between flex-col sm:flex-row>
-      <div>近两日访问ip</div>
+      <div>
+        <span>近期访问ip</span>
+        <n-popconfirm
+          @positive-click="handlePositiveClick"
+        >
+          <template #trigger>
+            <n-button text ml-2 text-red>
+              清除
+            </n-button>
+          </template>
+          确定清除？
+        </n-popconfirm>
+      </div>
       <n-input-group w-80 py-1>
         <n-input v-model:value="text" :style="{ width: '18rem' }" placeholder="过滤ip" />
         <n-button type="primary" ghost @click="handleSearch">

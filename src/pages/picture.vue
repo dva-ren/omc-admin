@@ -85,7 +85,7 @@ const handleUpload = async ({ file, onFinish, onError }: UploadCustomRequestOpti
       id: res.name,
       name: '封面',
       status: 'finished',
-      url: res.url,
+      url: `https://image.dvaren.xyz/${res.name}`,
     })
     message.success('上传成功')
     onFinish()
@@ -238,6 +238,9 @@ const createColumns = (): DataTableColumns<Picture> => [
     },
   },
 ]
+const onFinish = (url: string) => {
+  pictureForm.url = url
+}
 </script>
 
 <template>
@@ -260,7 +263,7 @@ const createColumns = (): DataTableColumns<Picture> => [
       :mask-closable="false"
       preset="dialog"
       title="编辑"
-      positive-text="完成"
+      positive-text="添加"
       negative-text="取消"
       @positive-click="onPositiveClick"
       @negative-click="onNegativeClick"
@@ -295,6 +298,7 @@ const createColumns = (): DataTableColumns<Picture> => [
             </n-upload-dragger>
           </n-upload>
         </n-form-item>
+        <Cropper :on-finish="onFinish" />
         <n-form-item label="图片地址" path="url">
           <n-input v-model:value="pictureForm.url" type="text" placeholder="上传或输入图片地址" />
         </n-form-item>

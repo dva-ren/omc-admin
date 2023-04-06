@@ -27,6 +27,7 @@
     "pinia": "^2.0.28",
     "ua-parser-js": "^1.0.33",
     "vue": "^3.2.45",
+    "vue-cropper": "^1.0.8",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {

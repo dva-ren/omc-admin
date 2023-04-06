@@ -112,7 +112,7 @@ const handleUpload = async ({ file, onFinish, onError }: UploadCustomRequestOpti
       id: res.name,
       name: '封面',
       status: 'finished',
-      url: res.url,
+      url: `https://image.dvaren.xyz/${res.name}`,
     })
     message.success('上传成功')
     onFinish()

@@ -78,7 +78,7 @@ export const queryLogList = (pageNum = 1, pageSize = 20, ip?: string): LogListRe
 }
 
 /**
- * 获取今日访问的ip列表
+ * 获取近期访问的ip列表
  * @returns ips
  *
  */
@@ -86,6 +86,13 @@ export const queryIps = (): AsyncResponse<Array<string>> => {
   return http.request({
     url: '/log/ips',
     method: 'GET',
+  })
+}
+
+export const clearIps = (): AsyncResponse<Array<string>> => {
+  return http.request({
+    url: '/log/clearIps',
+    method: 'get',
   })
 }
 
