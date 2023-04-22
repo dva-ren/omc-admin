@@ -31,7 +31,7 @@ const pagination = reactive({
   },
 })
 const loading = ref(false)
-
+const message = useMessage()
 const logList = ref<Logger[]>([])
 const ips = ref<Array<string>>([])
 const text = ref('')
@@ -140,7 +140,7 @@ const refresh = () => {
 const handlePositiveClick = () => {
   clearIps().then((res) => {
     if (res.code === 200) {
-      useMessage().success('清理成功')
+      message.success('清理成功')
       ips.value = []
     }
   })
