@@ -4,6 +4,7 @@ import {
   BookmarksOutline,
   ChatboxEllipsesOutline,
   CodeSlashOutline,
+  PeopleOutline,
 } from '@vicons/ionicons5'
 
 import { MessageReport, Messages } from '@vicons/tabler'
@@ -33,6 +34,8 @@ const state = reactive<SystemState>({
   says: 0,
   recently: 0,
   unreadComments: 0,
+  unreadFriends: 0,
+  friends: 0,
   online: 0,
   todayMaxOnline: 0,
   todayOnlineTotal: 0,
@@ -47,6 +50,7 @@ interface DisplayList {
   view: string
   manage?: string
   bottonText?: string
+  fresh?: () => number
   icon: Component
 }
 const displayList: DisplayList[] = [
@@ -95,10 +99,21 @@ const displayList: DisplayList[] = [
     title: '未读评论',
     key: 'unreadComments',
     bottonText: '查看',
-    edit: `/comment?status=${0}`,
+    edit: '/comment?status=0',
     view: '',
     manage: '',
+    fresh: () => state.unreadComments,
     icon: MessageReport,
+  },
+  {
+    title: '友链',
+    key: 'friends',
+    bottonText: '查看',
+    edit: '/friends?status=1',
+    view: '',
+    manage: '',
+    fresh: () => state.unreadFriends,
+    icon: PeopleOutline,
   },
 ]
 
@@ -145,12 +160,12 @@ queryState()
             {{ state[i.key] || 0 }}
           </div>
           <n-space>
-            <n-badge v-if="i.key === 'unreadComments'" :value="state.unreadComments">
+            <n-badge v-if="i.fresh" :value="i.fresh()">
               <n-button v-if="i.edit" type="primary" round @click="go(i.edit)">
                 查看
               </n-button>
             </n-badge>
-            <n-button v-if="i.edit && i.key !== 'unreadComments'" type="primary" round @click="go(i.edit)">
+            <n-button v-else type="primary" round @click="go(i.edit)">
               {{ i.bottonText || '撰写' }}
             </n-button>
             <n-button v-if="i.manage" secondary round @click="go(i.manage)">

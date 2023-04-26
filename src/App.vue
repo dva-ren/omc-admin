@@ -11,6 +11,7 @@ import {
   DiscOutline,
   EyeSharp,
   ImageOutline,
+  PeopleOutline,
   SettingsOutline,
 } from '@vicons/ionicons5'
 import {
@@ -125,6 +126,12 @@ const menuOptions: MenuOption[] = [
     key: 'picture',
     icon: renderIcon(ImageOutline),
     href: '/picture',
+  },
+  {
+    label: '友链',
+    key: 'friends',
+    icon: renderIcon(PeopleOutline),
+    href: '/friends',
   },
   {
     label: '数据',

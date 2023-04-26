@@ -154,6 +154,8 @@ export interface SystemState {
   callTime: number
   uv: number
   todayIpAccessCount: number
+  unreadFriends: number
+  friends: number
 }
 
 /**
@@ -239,4 +241,22 @@ export interface PictureForm {
   position?: string
   labels?: string
   description?: string
+}
+
+export interface FriendForm {
+  id?: string
+  name: string
+  avatar: string
+  url: string
+  state?: number
+  description: string
+}
+
+export interface Friend extends FriendForm {
+  id: string
+  type: string
+  state: number
+  createTime: string
+  updateTime: string
+  isDelete: number
 }
