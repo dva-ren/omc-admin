@@ -126,6 +126,8 @@ export interface Master extends MasterForm {
   id: string
   lastLoginIp: string
   lastLoginTime: string
+  siteName: string
+  icp: string
   createTime: string
   updateTime: string
 }

@@ -175,6 +175,12 @@ const handleSave = async () => {
         <n-form-item path="url" label="主页地址">
           <n-input v-model:value="master.url" />
         </n-form-item>
+        <n-form-item path="url" label="网站名称">
+          <n-input v-model:value="master.siteName" />
+        </n-form-item>
+        <n-form-item path="url" label="icp备案号">
+          <n-input v-model:value="master.icp" />
+        </n-form-item>
         <n-form-item path="avatar" label="头像地址">
           <n-space>
             <n-input v-model:value="master.avatar" flex-1 />
