@@ -10,13 +10,11 @@ import {
 import { MessageReport, Messages } from '@vicons/tabler'
 import { NIcon } from 'naive-ui'
 import type { Component } from 'vue'
-import { querySystemState } from '~/api'
-import { useMainStore } from '~/store'
-import type { SystemState } from '~/types'
+import { useMasterStore } from '~/store'
 
 const router = useRouter()
 const message = useMessage()
-const mainStore = useMainStore()
+const masterStore = useMasterStore()
 const go = (url: string | undefined) => {
   if (!url)
     return
@@ -141,10 +139,10 @@ queryState()
         登录记录
       </div>
       <div text-gray-5>
-        上次登录IP: {{ mainStore.master.lastLoginIp }}
+        上次登录IP: {{ masterStore.masterInfo.lastLoginIp }}
       </div>
       <div text-gray-5>
-        上次登录时间: {{ mainStore.master.lastLoginTime }}
+        上次登录时间: {{ masterStore.masterInfo.lastLoginTime }}
       </div>
     </div>
     <div text-xl py-2>

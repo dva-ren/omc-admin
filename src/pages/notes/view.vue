@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NPopconfirm, NSpace } from 'naive-ui'
-
-import { deleteNote, queryNoteList } from '~/api'
-
-import type { Note } from '~/types'
+import { NButton, NIcon, NPopconfirm, NSpace } from 'naive-ui'
+import { EyeOff, Lock } from '@vicons/tabler'
+import type { NoteModel } from '~/models'
+import { deleteNote, getNoteList } from '~/api'
 import { dateFns, emptyValue } from '~/composables'
-import { useMainStore } from '~/store'
 
-const notes = ref<Array<Note>>([])
+const notes = ref<Array<NoteModel>>([])
+
 const loadding = ref(true)
 const pagination = reactive({
   page: 1,
@@ -26,14 +25,13 @@ const pagination = reactive({
   prefix: () => `共${pagination.itemCount}条记录`,
 })
 const message = useMessage()
-const website = useMainStore().master.url
 const router = useRouter()
 
 const getNotes = async () => {
   loadding.value = true
-  const res = await queryNoteList(pagination.page, pagination.pageSize)
-  pagination.itemCount = res.data.total
-  notes.value = res.data.list
+  const res = await getNoteList(pagination.page, pagination.pageSize)
+  pagination.itemCount = res.pagination.total
+  notes.value = res.data
   // console.log(res)
   loadding.value = false
 }
@@ -41,38 +39,49 @@ watch(pagination, () => {
   getNotes()
 }, { immediate: true })
 
-const rowKey = (row: Note) => row.id
+const rowKey = (row: NoteModel) => row.id
 
-const handleDelete = async (row: Note) => {
-  const res = await deleteNote(row.id)
-  if (res.code === 200) {
-    message.success('删除成功')
-    getNotes()
-  }
-  else {
-    message.error('未知错误，删除失败')
-  }
+function isSecret(row: NoteModel) {
+  return dateFns().isBefore(dateFns(row.secret))
 }
-const createColumns = (): DataTableColumns<Note> => [
+
+const handleDelete = async (row: NoteModel) => {
+  await deleteNote(row.id)
+  message.success('删除成功')
+  getNotes()
+}
+
+const createColumns = (): DataTableColumns<NoteModel> => [
   {
     type: 'selection',
+  },
+  {
+    key: 'status',
+    width: 30,
+    render: row => [
+      row.hide
+        ? h(NIcon, {
+          component: EyeOff,
+          size: 15,
+          color: 'green',
+        })
+        : '',
+      isSecret(row)
+        ? h(NIcon, {
+          component: Lock,
+          size: 15,
+          color: 'red',
+        })
+        : '',
+    ],
+
   },
   {
     title: '标题',
     key: 'title',
     width: 150,
     ellipsis: true,
-    render: (row) => {
-      return h(
-        'a',
-        {
-          href: `${website.endsWith('/') ? website : `${website}/`}notes/${row.id}`,
-          target: '_blank',
-          class: row.status === 1 ? 'is-hide' : 'link',
-        },
-        { default: () => row.title },
-      )
-    },
+    render: row => row.title,
   },
 
   {
@@ -91,19 +100,13 @@ const createColumns = (): DataTableColumns<Note> => [
     title: '位置',
     key: 'position',
     width: 80,
-    render: row => emptyValue(row.position),
+    render: row => emptyValue(row.location),
   },
   {
     title: '创建于',
     width: 80,
     key: 'createTime',
-    render: row => dateFns(row.createTime).fromNow(),
-  },
-  {
-    title: '最后修改',
-    width: 80,
-    key: 'updateTime',
-    render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
+    render: row => dateFns(row.created).fromNow(),
   },
   {
     title: '操作',

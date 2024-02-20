@@ -1,39 +1,38 @@
+import type { NoteCreateModel, NoteModel, NoteResponse } from '~/models/note'
 import http from '~/composables/requests'
-import type { AsyncResponse, Note, PageInfo } from '~/types'
 
-type NoteListResult = AsyncResponse<PageInfo<Note>>
-
-export const queryNoteList = (pageNum = 1, pageSize = 20): NoteListResult => {
-  return http.request({
-    url: `/note?pageNum=${pageNum}&pageSize=${pageSize}`,
+export const getNoteList = (pageNum = 1, pageSize = 20) => {
+  return http.request<NoteResponse>({
+    url: `/notes?pageNum=${pageNum}&pageSize=${pageSize}`,
     method: 'GET',
   })
 }
-export const queryNote = (id: string): AsyncResponse<Note> => {
-  return http.request({
-    url: `/note/${id}`,
+export const getNote = (id?: string) => {
+  return http.request<NoteModel>({
+    url: `/notes/${id ?? 'latest'}`,
     method: 'GET',
   })
 }
-export const addNote = (data: Note): AsyncResponse<Note> => {
-  return http.request({
-    url: '/note',
+
+export const addNote = (data: NoteCreateModel) => {
+  return http.request<NoteModel>({
+    url: '/notes',
     method: 'POST',
     data,
   })
 }
 
-export const updateNote = (id: string, data: Note): AsyncResponse<Note> => {
-  return http.request({
-    url: `/note/${id}`,
-    method: 'POST',
-    data,
-  })
-}
-
-export const deleteNote = (id: string): AsyncResponse<null> => {
-  return http.request({
-    url: `/note/${id}`,
+export const updateNote = (id: string, data: NoteCreateModel) => {
+  return http.request<NoteModel>({
+    url: `/notes/${id}`,
     method: 'PUT',
+    data,
+  })
+}
+
+export const deleteNote = (id: string) => {
+  return http.request({
+    url: `/notes/${id}`,
+    method: 'DELETE',
   })
 }

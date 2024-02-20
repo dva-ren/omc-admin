@@ -1,8 +1,10 @@
-export * from './article'
+export * from './post'
+export * from './user'
 export * from './category'
 export * from './note'
 export * from './say'
-export * from './system'
 export * from './comment'
-export * from './picture'
-export * from './friends'
+
+export const queryIpInfo = (ip: string) => {
+  return (`https://api.vore.top/api/IPdata?ip=${ip}`)
+}

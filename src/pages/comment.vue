@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NGradientText, NPopconfirm } from 'naive-ui'
-import type { Comment, Note } from '~/types'
+import { NButton, NGradientText, NImage, NPopconfirm } from 'naive-ui'
 import IpInfo from '~/components/IpInfo.vue'
-import { changeCommentStatus, deleteComment, queryComment } from '~/api'
-
+import { deleteComment, getRecentlyComments, modifyCommentState } from '~/api'
 import { dateFns, emptyValue } from '~/composables'
+import type { CommentModel } from '~/models'
+
 const route = useRoute()
 const router = useRouter()
-const comments = ref<Array<Comment>>([])
+const comments = ref<Array<CommentModel>>([])
 const loadding = ref(true)
 
 const pagination = reactive({
@@ -28,139 +28,64 @@ const pagination = reactive({
 })
 
 const message = useMessage()
-const status = computed(() => Number(route.query.status) || 0)
+const state = computed(() => Number(route.query.state) || 0)
 const processing = ref(false)
 const view = reactive({
   visible: false,
-  comment: {} as Comment,
+  comment: {} as CommentModel,
 })
 
 const getComments = async () => {
   loadding.value = true
-  const res = await queryComment(status.value, pagination.page, pagination.pageSize)
-  comments.value = res.data.list
-  pagination.itemCount = res.data.total
+  const res = await getRecentlyComments({
+    page: pagination.page,
+    size: pagination.pageSize,
+    state: state.value,
+  })
+  comments.value = res.data
+  pagination.itemCount = res.pagination.total
   loadding.value = false
 }
-watch(status, () => {
+watch(state, () => {
   pagination.page = 1
   pagination.pageSize = 15
   getComments()
 }, { immediate: true })
 
-const rowKey = (row: Note) => row.id
+const rowKey = (row: CommentModel) => row.id
 
 const handleDelete = async () => {
   processing.value = true
-  const res = await deleteComment(view.comment.id)
-  if (res.code === 200) {
-    message.success('删除成功')
-    view.visible = false
-    getComments()
-  }
-  else {
-    message.error('未知错误，删除失败')
-  }
+  await deleteComment(view.comment.id)
+  message.success('删除成功')
+  getComments()
+  view.visible = false
   processing.value = false
 }
-const handleView = (row: Comment) => {
-  view.visible = true
-  view.comment = row
-}
+
 const handleUpdateValue = (value: string) => {
-  router.push(`/comment?status=${value}`)
+  router.push(`/comment?state=${value}`)
 }
-const updateStatus = async (status: number) => {
+const updateStatus = async (state: number) => {
   processing.value = true
-  const res = await changeCommentStatus(view.comment.id, status)
-  if (res.code === 200) {
-    message.success('操作成功')
-    view.visible = false
-  }
-  else { message.success('操作失败') }
+  await modifyCommentState(view.comment.id, { state })
+  message.success('操作成功')
+  view.visible = false
   processing.value = false
   getComments()
 }
-const createColumns = (): DataTableColumns<Comment> => [
+const createColumns = (): DataTableColumns<CommentModel> => [
   {
     type: 'selection',
   },
   {
-    title: '作者',
-    key: 'author',
-    width: 80,
-    render: (row) => {
-      if (row.url) {
-        return h(
-          'a',
-          {
-            href: row.url,
-            target: '_blank',
-            class: 'link',
-          },
-          { default: () => row.author },
-        )
-      }
-      return row.author
-    },
+    key: 'avatar',
+    render: row => h(NImage, {
+      src: row.avatar,
+      style: 'width: 30px; height: 30px; border-radius: 50%;',
+    }),
   },
 
-  {
-    title: '评论内容',
-    key: 'content',
-    width: 300,
-    render(row) {
-      if (row.isWhispers) {
-        return h(
-          NGradientText,
-          {
-            type: 'info',
-          },
-          {
-            default: () => row.content,
-          },
-        )
-      }
-      else { return row.content }
-    },
-  },
-  {
-    title: '评论于',
-    width: 80,
-    key: 'createTime',
-    render: row => dateFns(row.createTime).fromNow(),
-  },
-  {
-    title: 'IP',
-    width: 80,
-    key: '',
-    render: row => h(IpInfo, { ip: row.sendIp }),
-  },
-  {
-    title: 'ip归属',
-    width: 80,
-    key: 'location',
-    render: row => row.location || '-',
-  },
-  {
-    title: '操作',
-    key: 'actions',
-    fixed: 'right',
-    width: 60,
-    render(row) {
-      return h(
-        NButton,
-        {
-          strong: true,
-          secondary: true,
-          size: 'tiny',
-          type: 'primary',
-          onClick: () => handleView(row),
-        },
-        { default: () => '查看' },
-      )
-    },
-  },
 ]
 </script>
 
@@ -171,7 +96,7 @@ const createColumns = (): DataTableColumns<Comment> => [
     </div>
     <n-tabs
       ref="tabsRef"
-      :value="status"
+      :value="state"
       type="line"
       p-2
       @update:value="handleUpdateValue"
@@ -203,35 +128,6 @@ const createColumns = (): DataTableColumns<Comment> => [
       max-w-160
       title="查看评论"
     >
-      <n-descriptions label-placement="left" :column="2">
-        <n-descriptions-item label="作者">
-          {{ view.comment.author }}
-        </n-descriptions-item>
-        <n-descriptions-item label="邮箱">
-          {{ emptyValue(view.comment.mail) }}
-        </n-descriptions-item>
-        <n-descriptions-item label="网站">
-          {{ emptyValue(view.comment.url) }}
-        </n-descriptions-item>
-        <n-descriptions-item label="评论时间">
-          {{ view.comment.createTime }}
-        </n-descriptions-item>
-        <n-descriptions-item label="IP">
-          <IpInfo :ip="view.comment.sendIp" />
-        </n-descriptions-item>
-        <n-descriptions-item label="位置">
-          {{ emptyValue(view.comment.location) }}
-        </n-descriptions-item>
-        <n-descriptions-item label="悄悄话">
-          {{ view.comment.isWhispers ? '是' : '否' }}
-        </n-descriptions-item>
-        <n-descriptions-item label="评论类型">
-          {{ view.comment.refType }}
-        </n-descriptions-item>
-        <n-descriptions-item label="评论内容" :span="3">
-          {{ view.comment.content }}
-        </n-descriptions-item>
-      </n-descriptions>
       <n-space mt-4 justify="space-between">
         <NPopconfirm
           @positive-click="handleDelete"
@@ -244,10 +140,10 @@ const createColumns = (): DataTableColumns<Comment> => [
           确定删除吗？
         </NPopconfirm>
         <n-space>
-          <NButton v-if="view.comment.status !== 1" strong secondary type="success" :loading="processing" @click="updateStatus(1)">
+          <NButton v-if="view.comment.state !== 1" strong secondary type="success" :loading="processing" @click="updateStatus(1)">
             已读
           </NButton>
-          <NButton v-if="view.comment.status !== 2" strong secondary type="warning" :loading="processing" @click="updateStatus(2)">
+          <NButton v-if="view.comment.state !== 2" strong secondary type="warning" :loading="processing" @click="updateStatus(2)">
             垃圾评论
           </NButton>
         </n-space>

@@ -2,12 +2,14 @@
 import type { DataTableColumns, FormInst } from 'naive-ui'
 import { NButton, NPopconfirm, NSpace, useMessage } from 'naive-ui'
 import { Add } from '@vicons/ionicons5'
-import { addCategory, deleteCategory, queryCategoryList, updateCategory } from '~/api'
-import type { Category } from '~/types'
+import { createCategory, deleteCateGory, getAllCategories, updateCategory } from '~/api'
+import { CategoryType } from '~/models'
+import type { CategoryModel } from '~/models'
+
 import { dateFns } from '~/composables'
 
 const message = useMessage()
-const categories = ref<Array<Category>>([])
+const categories = ref<Array<CategoryModel>>([])
 const loadding = ref(true)
 const pagination = reactive({ pageSize: 20 })
 const showModal = ref(false)
@@ -16,30 +18,26 @@ const formInstRef = ref<FormInst | null>(null)
 const categoryForm = reactive({
   id: '',
   name: '',
-  description: '',
+  type: CategoryType.Category,
+  slug: undefined,
 })
 
 const getCategories = async () => {
-  const res = await queryCategoryList()
+  const res = await getAllCategories()
   categories.value = res.data
   loadding.value = false
 }
 getCategories()
 
-const rowKey = (row: Category) => row.id
+const rowKey = (row: CategoryModel) => row.id
 
-const handleDelete = async (row: Category) => {
-  const res = await deleteCategory(row.id)
-  if (res.code === 200) {
-    message.success('删除成功')
-    getCategories()
-  }
-  else { message.error(res.msg) }
+const handleDelete = async (row: CategoryModel) => {
+  await deleteCateGory(row.id)
+  message.success('删除成功')
+  getCategories()
 }
-const handleEdit = (row: Category) => {
-  categoryForm.id = row.id
-  categoryForm.name = row.name
-  categoryForm.description = row.description
+const handleEdit = (row: CategoryModel) => {
+  Object.assign(categoryForm, row)
   showModal.value = true
 }
 const onPositiveClick = async () => {
@@ -49,26 +47,16 @@ const onPositiveClick = async () => {
     }
     else {
       if (categoryForm.id) {
-        const res = await updateCategory(categoryForm.id, categoryForm)
-        if (res.code === 200) {
-          categoryForm.id = ''
-          categoryForm.name = ''
-          categoryForm.description = ''
-          message.success('修改成功')
-          showModal.value = false
-          getCategories()
-        }
+        await updateCategory(categoryForm.id, categoryForm)
+        message.success('修改成功')
       }
       else {
-        const res = await addCategory(categoryForm)
-        if (res.code === 200) {
-          categoryForm.name = ''
-          categoryForm.description = ''
-          message.success('添加成功')
-          showModal.value = false
-          getCategories()
-        }
+        await createCategory(categoryForm)
+        categoryForm.name = ''
+        message.success('添加成功')
       }
+      showModal.value = false
+      getCategories()
     }
   })
   return false
@@ -77,7 +65,6 @@ const onPositiveClick = async () => {
 const onNegativeClick = () => {
   categoryForm.id = ''
   categoryForm.name = ''
-  categoryForm.description = ''
   showModal.value = false
 }
 const rules = {
@@ -93,7 +80,7 @@ const rules = {
     message: '至少输入一个字符',
   },
 }
-const createColumns = (): DataTableColumns<Category> => [
+const createColumns = (): DataTableColumns<CategoryModel> => [
   {
     type: 'selection',
   },
@@ -117,13 +104,7 @@ const createColumns = (): DataTableColumns<Category> => [
     title: '创建于',
     width: 100,
     key: 'createTime',
-    render: row => dateFns(row.createTime).fromNow(),
-  },
-  {
-    title: '最后修改',
-    width: 100,
-    key: 'updateTime',
-    render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
+    render: row => dateFns(row.created).fromNow(),
   },
   {
     title: '操作',
@@ -204,8 +185,16 @@ const createColumns = (): DataTableColumns<Category> => [
         <n-form-item label="分类名称" required path="name">
           <n-input v-model:value="categoryForm.name" type="text" placeholder="取个名字吧" />
         </n-form-item>
-        <n-form-item label="简介" required path="description">
-          <n-input v-model:value="categoryForm.description" type="text" placeholder="分类介绍" />
+        <n-form-item label="路径" path="description">
+          <n-input v-model:value="categoryForm.slug" type="text" placeholder="分类路径" />
+        </n-form-item>
+        <n-form-item label="类型" required path="type">
+          <n-select
+            v-model:value="categoryForm.type"
+            :default-value="CategoryType.Category"
+            :options="[{ label: '文章分类', value: CategoryType.Category }, { label: '标签', value: CategoryType.Tag }]"
+            placeholder="选择类型"
+          />
         </n-form-item>
       </n-form>
     </n-modal>

@@ -7,7 +7,7 @@ import {
   darkTheme,
   lightTheme,
 } from 'naive-ui'
-import type { Response } from '~/types'
+import { ACCESS_TOKEN } from '~/constants/system'
 
 const themeRef = ref<'light' | 'dark'>('light')
 const configProviderPropsRef = computed<ConfigProviderProps>(() => ({
@@ -24,7 +24,7 @@ const { message } = createDiscreteApi(
 class HttpRequest {
   private readonly baseUrl: string
   constructor() {
-    this.baseUrl = 'http://localhost:4001/'
+    this.baseUrl = 'http://localhost:2333/'
     if (import.meta.env.MODE === 'production')
       this.baseUrl = 'https://api.dvaren.xyz/admin'
   }
@@ -41,12 +41,12 @@ class HttpRequest {
 
   // 请求拦截
   interceptors(instance: AxiosInstance, url: string | number | undefined) {
-    instance.interceptors.request.use((config) => {
+    instance.interceptors.request.use((config: any) => {
       // 添加全局的loading..
       // 请求头携带token
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem(ACCESS_TOKEN)
       if (token)
-        config.headers!.token = token
+        config.headers[ACCESS_TOKEN] = token
       return config
     }, (error: any) => {
       return Promise.reject(error)
@@ -54,35 +54,23 @@ class HttpRequest {
     // 响应拦截
     instance.interceptors.response.use((res) => {
       // 返回数据
-      const { data } = res
-      if (data?.code === 405) {
-        // message.error(data?.msg)
-        message.error('登录失效,请重新登录')
-        localStorage.removeItem('token')
-        return Promise.reject(data)
-      }
-      if (data?.code !== 200) {
-        // message.error(data?.msg)
-        message.error(data?.msg)
-        // return Promise.reject(data)
-        return data
-      }
-      if (data.code === 5000) {
-        localStorage.removeItem('token')
-        return
-      }
-      return data
+      return res.data
     }, (error: any) => {
-      message.error('服务器错误')
+      if (error.response.status === 400)
+        message.error(error.response.data.message)
+      else if (error.response.status === 401)
+        message.error('当前未登录')
+      else
+        message.error('服务器错误')
       return Promise.reject(error)
     })
   }
 
-  request(options: AxiosRequestConfig) {
+  request<T>(options: AxiosRequestConfig) {
     const instance = axios.create()
     options = Object.assign(this.getInsideConfig(), options)
     this.interceptors(instance, options.url)
-    return instance(options) as unknown as Promise<Response<any>>
+    return instance(options) as unknown as Promise<T>
   }
 }
 

@@ -1,37 +1,32 @@
 import http from '~/composables/requests'
-import type { AsyncResponse, Category } from '~/types'
+import type { CategoryDto, CategoryModel, CategoryResponse } from '~/models/category'
 
-export const queryCategoryList = (): AsyncResponse<Array<Category>> => {
-  return http.request({
-    url: '/category',
-    method: 'GET',
-  })
-}
-export const queryCategory = (id: string): AsyncResponse<Category> => {
-  return http.request({
-    url: `/category/${id}`,
-    method: 'GET',
-  })
-}
-export const addCategory = (data: Category): AsyncResponse<Category> => {
-  return http.request({
-    url: '/category',
+export const createCategory = (data: CategoryDto) => {
+  return http.request<CategoryModel>({
+    url: '/categories',
     method: 'POST',
     data,
   })
 }
 
-export const updateCategory = (id: string, data: Category): AsyncResponse<Category> => {
-  return http.request({
-    url: `/category/${id}`,
-    method: 'POST',
-    data,
+export const getAllCategories = () => {
+  return http.request<CategoryResponse>({
+    url: '/categories',
+    method: 'GET',
   })
 }
 
-export const deleteCategory = (id: string): AsyncResponse<null> => {
-  return http.request({
-    url: `/category/${id}`,
+export const updateCategory = (id: string, data: CategoryDto) => {
+  return http.request<CategoryModel>({
+    url: `/categories/${id}`,
     method: 'PUT',
+    data,
+  })
+}
+
+export const deleteCateGory = (id: string) => {
+  return http.request({
+    url: `/categories/${id}`,
+    method: 'DELETE',
   })
 }

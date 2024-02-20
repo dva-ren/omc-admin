@@ -2,12 +2,11 @@
 import type { DataTableColumns, FormInst } from 'naive-ui'
 import { NButton, NPopconfirm, NSpace } from 'naive-ui'
 import { Add } from '@vicons/ionicons5'
-import { addSay, deleteSay, querySay, querySayList, updateSay } from '~/api'
-
-import type { Say } from '~/types'
+import { createSay, deleteSay, getSayList, updateSay } from '~/api'
+import type { CreateSayModel, SayModel } from '~/models'
 import { dateFns, emptyValue } from '~/composables'
 
-const says = ref<Array<Say>>([])
+const says = ref<Array<SayModel>>([])
 const loadding = ref(true)
 const pagination = reactive({
   page: 1,
@@ -28,38 +27,35 @@ const message = useMessage()
 const showModal = ref(false)
 const formInstRef = ref<FormInst | null>(null)
 const loading = ref(false)
-const sayForm = reactive({
+const sayForm = reactive<CreateSayModel & { id: string }>({
   id: '',
-  content: '',
+  text: '',
   author: '',
-  origin: '',
+  source: '',
 })
 const resetForm = () => {
   sayForm.id = ''
-  sayForm.content = ''
+  sayForm.text = ''
+  sayForm.source = ''
   sayForm.author = ''
-  sayForm.origin = ''
 }
 const getSays = async (pageNum: number, pageSize: number) => {
   loadding.value = true
-  const res = await querySayList(pageNum, pageSize)
-  pagination.itemCount = res.data.total
-  says.value = res.data.list
+  const res = await getSayList(pageNum, pageSize)
+  pagination.itemCount = res.pagination.total
+  says.value = res.data
   loadding.value = false
 }
 watchEffect(() => {
   getSays(pagination.page, pagination.pageSize)
 })
 
-const rowKey = (row: Say) => row.id
+const rowKey = (row: SayModel) => row.id
 
-const handleDelete = async (row: Say) => {
-  const res = await deleteSay(row.id)
-  if (res.code === 200) {
-    message.success('删除成功')
-    getSays(pagination.page, pagination.pageSize)
-  }
-  else { message.error('删除失败') }
+const handleDelete = async (row: SayModel) => {
+  await deleteSay(row.id)
+  message.success('删除成功')
+  getSays(pagination.page, pagination.pageSize)
 }
 
 const onPositiveClick = async () => {
@@ -71,23 +67,17 @@ const onPositiveClick = async () => {
       try {
         loading.value = true
         if (sayForm.id) {
-          const res = await updateSay(sayForm.id, sayForm)
-          if (res.code === 200) {
-            resetForm()
-            message.success('修改成功')
-            showModal.value = false
-            getSays(pagination.page, pagination.pageSize)
-          }
+          await updateSay(sayForm.id, sayForm)
+          message.success('修改成功')
+          getSays(pagination.page, pagination.pageSize)
         }
         else {
-          const res = await addSay(sayForm)
-          if (res.code === 200) {
-            resetForm()
-            message.success('添加成功')
-            showModal.value = false
-            getSays(pagination.page, pagination.pageSize)
-          }
+          await createSay(sayForm)
+          getSays(pagination.page, pagination.pageSize)
+          message.success('添加成功')
         }
+        showModal.value = false
+        resetForm()
       }
       catch (e: any) {
         message.error(e)
@@ -100,54 +90,46 @@ const onPositiveClick = async () => {
   return false
 }
 const rules = {
-  content: {
+  text: {
     required: true,
     min: 4,
     message: '至少输入4个字符',
   },
-  author: {
-    required: true,
-    min: 1,
-    message: '至少输入一个字符',
-  },
 }
-const handleEdit = (row: Say) => {
-  sayForm.id = row.id
-  sayForm.origin = row.origin
-  sayForm.author = row.author
-  sayForm.content = row.content
+const handleEdit = (row: SayModel) => {
+  Object.assign(sayForm, row)
   showModal.value = true
 }
 const onNegativeClick = () => {
   resetForm()
   showModal.value = false
 }
-const createColumns = (): DataTableColumns<Say> => [
+const createColumns = (): DataTableColumns<SayModel> => [
   {
     type: 'selection',
   },
   {
     title: '内容',
-    key: 'content',
+    key: 'text',
     width: 400,
   },
   {
     title: '作者',
-    key: 'category',
+    key: 'author',
     width: 60,
     render: row => emptyValue(row.author),
   },
   {
     title: '来源',
-    key: 'label',
+    key: 'source',
     width: 60,
-    render: row => emptyValue(row.origin),
+    render: row => emptyValue(row.source),
   },
   {
     title: '创建于',
     width: 60,
     key: 'createTime',
-    render: row => dateFns(row.createTime).fromNow(),
+    render: row => dateFns(row.created).fromNow(),
   },
   {
     title: '操作',
@@ -225,14 +207,14 @@ const createColumns = (): DataTableColumns<Say> => [
       @after-leave="onNegativeClick"
     >
       <n-form ref="formInstRef" :model="sayForm" :rules="rules">
-        <n-form-item label="作者" required path="author">
+        <n-form-item label="作者" path="author">
           <n-input v-model:value="sayForm.author" type="text" placeholder="谁说的呢" />
         </n-form-item>
         <n-form-item label="来源" path="origin">
-          <n-input v-model:value="sayForm.origin" type="text" placeholder="出自哪里呢" />
+          <n-input v-model:value="sayForm.source" type="text" placeholder="出自哪里呢" />
         </n-form-item>
         <n-form-item label="内容" required path="content">
-          <n-input v-model:value="sayForm.content" type="textarea" placeholder="说了点什么" />
+          <n-input v-model:value="sayForm.text" type="textarea" placeholder="说了点什么" />
         </n-form-item>
       </n-form>
     </n-modal>

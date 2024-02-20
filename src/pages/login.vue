@@ -1,12 +1,13 @@
 <script lang="ts" setup>
+import { useMasterStore } from '~/store'
 import { login } from '~/api'
-import { useMainStore } from '~/store'
+import { ACCESS_TOKEN } from '~/constants/system'
 
 const router = useRouter()
 const message = useMessage()
 const processing = ref(false)
 const loginForm = reactive({
-  username: '',
+  username: 'test',
   password: '',
 })
 
@@ -17,13 +18,11 @@ const handleLogin = async () => {
   }
   try {
     processing.value = true
-    const res = await login(loginForm.password)
-    if (res.code === 200) {
-      localStorage.setItem('token', res.token!)
-      useMainStore().init()
-      message.success('登录成功')
-      router.replace('/dashboard')
-    }
+    const res = await login(loginForm.username, loginForm.password)
+    localStorage.setItem(ACCESS_TOKEN, res.token)
+    useMasterStore().initMasterInfo()
+    message.success('登录成功')
+    router.replace('/dashboard')
   }
   finally {
     processing.value = false

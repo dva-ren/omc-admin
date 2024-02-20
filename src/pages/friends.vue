@@ -2,8 +2,6 @@
 import type { DataTableColumns, FormInst } from 'naive-ui'
 import { NAvatar, NButton, NTag } from 'naive-ui'
 import { Add } from '@vicons/ionicons5'
-import type { Friend, FriendForm, Note } from '~/types'
-import { addFriend, deleteFriend, queryFriends, updateFriend } from '~/api'
 import { dateFns, emptyValue } from '~/composables'
 const route = useRoute()
 const router = useRouter()

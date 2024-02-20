@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NPopconfirm, NSpace } from 'naive-ui'
-
-import type { Article } from '~/types'
+import { NButton, NIcon, NPopconfirm, NSpace } from 'naive-ui'
+import { Pin } from '@vicons/tabler'
+import type { PostModel } from '~/models'
 import { dateFns, emptyValue } from '~/composables'
-import { deleteArticle, queryArticleList } from '~/api'
-import { useMainStore } from '~/store'
+import { deletePost, getPostList } from '~/api'
 
-const articles = ref<Array<Article>>([])
+const articles = ref<Array<PostModel>>([])
 const loadding = ref(true)
 const pagination = reactive({
   page: 1,
@@ -25,73 +24,78 @@ const pagination = reactive({
   prefix: () => `共${pagination.itemCount}条记录`,
 })
 const message = useMessage()
-const website = useMainStore().master.url
 const router = useRouter()
 
 const getArticles = async () => {
-  const res = await queryArticleList(pagination.page, pagination.pageSize)
-  pagination.itemCount = res.data.total
-  articles.value = res.data.list
+  const res = await getPostList(pagination.page, pagination.pageSize)
+  pagination.itemCount = res.pagination.total
+  articles.value = res.data
   loadding.value = false
 }
 watch(pagination, () => {
   getArticles()
 }, { immediate: true })
 
-const rowKey = (row: Article) => row.id
+const rowKey = (row: PostModel) => row.id
 
-const handleDelete = async (row: Article, state: number) => {
-  const res = await deleteArticle(row.id)
-  if (res.code === 200) {
-    message.success('删除成功')
-    getArticles()
-  }
-  else { message.error('删除失败') }
+const handleDelete = async (row: PostModel) => {
+  await deletePost(row.id)
+  message.success('删除成功')
+  getArticles()
 }
-const createColumns = (): DataTableColumns<Article> => [
+const createColumns = (): DataTableColumns<PostModel> => [
   {
     type: 'selection',
   },
   {
+    key: 'status',
+    width: 20,
+    render: row => [
+      row.pin
+        ? h(NIcon, {
+          component: Pin,
+          size: 16,
+          color: 'green',
+        })
+        : '',
+    ],
+  },
+  {
     title: '标题',
     key: 'title',
-    width: 300,
+    width: 220,
     ellipsis: true,
-    render: (row) => {
-      return h(
-        'a',
-        {
-          href: `${website.endsWith('/') ? website : `${website}/`}posts/${row.id}`,
-          target: '_blank',
-          class: row.status === 1 ? 'is-hide' : 'link',
-        },
-        { default: () => row.title },
-      )
-    },
+    render: row => row.title,
   },
   {
     title: '分类',
     key: 'category',
     width: 80,
-    render: row => emptyValue(row.categoryName),
+    render: row => emptyValue(row.category.name),
   },
   {
     title: '标签',
     key: 'label',
     width: 100,
-    render: row => row.label || [],
+    render: row => row.tags,
+  },
+  {
+    title: '置顶',
+    key: 'pin',
+    width: 100,
+    render: row => row.pin,
   },
   {
     title: '创建于',
     width: 100,
     key: 'createTime',
-    render: row => dateFns(row.createTime).fromNow(),
+    render: row => dateFns(row.created).fromNow(),
   },
   {
     title: '最后修改',
     width: 100,
     key: 'updateTime',
-    render: row => row.updateTime ? dateFns(row.updateTime).fromNow() : '-',
+    render: row => row.modified ? dateFns(row.modified).fromNow() : '-',
   },
   {
     title: '操作',
@@ -118,7 +122,7 @@ const createColumns = (): DataTableColumns<Article> => [
             h(
               NPopconfirm,
               {
-                onPositiveClick: () => handleDelete(row, 1),
+                onPositiveClick: () => handleDelete(row),
               },
               {
                 default: () => '确认删除吗?',

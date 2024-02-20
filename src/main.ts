@@ -13,6 +13,7 @@ import 'uno.css'
 import 'vfonts/Lato.css'
 // 等宽字体
 import 'vfonts/FiraCode.css'
+import { ACCESS_TOKEN } from './constants/system'
 
 const app = createApp(App)
 const router = createRouter({
@@ -22,7 +23,7 @@ const router = createRouter({
 NProgress.configure({ showSpinner: false })
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem(ACCESS_TOKEN)
   if (to.path === '/login')
     next()
   else if (!token)

@@ -20,7 +20,8 @@ import {
   MessageCircle,
   Pencil,
 } from '@vicons/tabler'
-import { useMainStore } from './store'
+import { useMasterStore } from './store'
+const master = useMasterStore()
 
 const collapsed = ref(false)
 
@@ -29,7 +30,6 @@ const collapsed = ref(false)
     toggleDark(false)
   if (document.documentElement.clientWidth < 600)
     collapsed.value = true
-  useMainStore().init()
 })()
 
 function renderMenuLabel(option: MenuOption) {
@@ -40,15 +40,6 @@ function renderMenuLabel(option: MenuOption) {
     )
   }
   return option.label as string
-}
-function renderMenuIcon(option: MenuOption) {
-  // 渲染图标占位符以保持缩进
-  if (option.key === 'sheep-man')
-    return true
-  // 返回 falsy 值，不再渲染图标及占位符
-  if (option.key === 'food')
-    return null
-  return h(NIcon, null, { default: () => h(option.icon ? option.icon : DiscOutline) })
 }
 
 function renderIcon(icon: Component) {
@@ -165,7 +156,7 @@ const menuOptions: MenuOption[] = [
           >
             <div text-center p-4 style="border-bottom: 1px rgba(224, 224, 224, 0.2) solid;">
               <div font-bold select-none min-w-0>
-                灰色の青
+                {{ master.masterInfo.name }}
               </div>
             </div>
             <n-menu

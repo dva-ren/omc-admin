@@ -1,39 +1,40 @@
 import http from '~/composables/requests'
-import type { AsyncResponse, PageInfo, Say } from '~/types'
+import type { PaginateResult } from '~/models'
+import type { CreateSayModel, SayModel } from '~/models/say'
 
-type SayListResult = AsyncResponse<PageInfo<Say>>
-
-export const querySayList = (pageNum = 1, pageSize = 20): SayListResult => {
-  return http.request({
-    url: `/say?pageNum=${pageNum}&pageSize=${pageSize}`,
-    method: 'GET',
-  })
-}
-export const querySay = (id: string): AsyncResponse<Say> => {
-  return http.request({
-    url: `/say/${id}`,
-    method: 'GET',
-  })
-}
-export const addSay = (data: Say): AsyncResponse<Say> => {
-  return http.request({
+export const createSay = (data: CreateSayModel) => {
+  return http.request<SayModel>({
     url: '/say',
     method: 'POST',
     data,
   })
 }
 
-export const updateSay = (id: string, data: Say): AsyncResponse<Say> => {
-  return http.request({
+export const getSayList = (pageNum = 1, pageSize = 20) => {
+  return http.request<PaginateResult<SayModel>>({
+    url: `/say?pageNum=${pageNum}&pageSize=${pageSize}`,
+    method: 'GET',
+  })
+}
+
+export const updateSay = (id: string, data: CreateSayModel) => {
+  return http.request<SayModel[]>({
     url: `/say/${id}`,
-    method: 'POST',
+    method: 'PUT',
     data,
   })
 }
 
-export const deleteSay = (id: string): AsyncResponse<null> => {
+export const getSay = (id: string) => {
+  return http.request<SayModel>({
+    url: `/say/${id}`,
+    method: 'GET',
+  })
+}
+
+export const deleteSay = (id: string) => {
   return http.request({
     url: `/say/${id}`,
-    method: 'PUT',
+    method: 'DELETE',
   })
 }

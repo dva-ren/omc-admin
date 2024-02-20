@@ -36,6 +36,7 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const emptyValue: typeof import('./src/composables/utils')['emptyValue']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const fetchAdaptor: typeof import('./src/composables/fetchAdapter')['fetchAdaptor']
   const formateDate: typeof import('./src/composables/date')['formateDate']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
@@ -326,6 +327,7 @@ declare module 'vue' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly emptyValue: UnwrapRef<typeof import('./src/composables/utils')['emptyValue']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly fetchAdaptor: UnwrapRef<typeof import('./src/composables/fetchAdapter')['fetchAdaptor']>
     readonly formateDate: UnwrapRef<typeof import('./src/composables/date')['formateDate']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>

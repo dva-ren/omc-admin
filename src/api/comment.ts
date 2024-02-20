@@ -1,22 +1,33 @@
+import type { CommentModel, CommentStatePatchDto } from '~/models/comment'
 import http from '~/composables/requests'
-import type { AsyncResponse, Comment, PageInfo } from '~/types'
+import type { PagerDto, PaginateResult } from '~/models'
 
-export const queryComment = (status: number, pageNum = 1, pageSize = 20): AsyncResponse<PageInfo<Comment>> => {
-  return http.request({
-    url: `/comment?status=${status}&pageNum=${pageNum}&pageSize=${pageSize}`,
+export const getComments = (id: string) => {
+  return http.request<CommentModel>({
+    url: `/comment/${id}`,
     method: 'GET',
   })
 }
 
-export const changeCommentStatus = (id: string, status: number): AsyncResponse<null> => {
-  return http.request({
-    url: `/comment/status/${id}/${status}`,
-    method: 'POST',
+export const getRecentlyComments = (data?: PagerDto & CommentStatePatchDto) => {
+  return http.request<PaginateResult<CommentModel>>({
+    url: '/comment',
+    method: 'GET',
+    data,
   })
 }
-export const deleteComment = (id: string): AsyncResponse<null> => {
+
+export const modifyCommentState = (id: string, data: CommentStatePatchDto) => {
+  return http.request<CommentModel>({
+    url: `/comment/${id}`,
+    method: 'PUT',
+    data,
+  })
+}
+
+export const deleteComment = (id: string) => {
   return http.request({
-    url: `/comment/delete/${id}`,
-    method: 'POST',
+    url: `/comment/${id}`,
+    method: 'DELETE',
   })
 }
