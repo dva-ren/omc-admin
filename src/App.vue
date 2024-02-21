@@ -2,13 +2,14 @@
 import { RouterLink, RouterView } from 'vue-router'
 import type { Component } from 'vue'
 import { h, ref } from 'vue'
-import { NIcon, dateZhCN, zhCN } from 'naive-ui'
+import { NButton, NIcon, dateZhCN, zhCN } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import {
   BarChartOutline,
   BookOutline,
   CodeSlashOutline,
   DiscOutline,
+  ExitOutline,
   EyeSharp,
   ImageOutline,
   PeopleOutline,
@@ -21,7 +22,7 @@ import {
   Pencil,
 } from '@vicons/tabler'
 import { useMasterStore } from './store'
-const master = useMasterStore()
+const masterStore = useMasterStore()
 
 const collapsed = ref(false)
 
@@ -156,7 +157,7 @@ const menuOptions: MenuOption[] = [
           >
             <div text-center p-4 style="border-bottom: 1px rgba(224, 224, 224, 0.2) solid;">
               <div font-bold select-none min-w-0>
-                {{ master.masterInfo.name }}
+                {{ masterStore.masterInfo.name }}
               </div>
             </div>
             <n-menu
@@ -166,8 +167,18 @@ const menuOptions: MenuOption[] = [
               :options="menuOptions"
               :render-label="renderMenuLabel"
             />
+            <div px-5>
+              <NButton quaternary w-full type="warning" @click="masterStore.logout()">
+                <template #icon>
+                  <NIcon size="25">
+                    <ExitOutline />
+                  </NIcon>
+                </template>
+                {{ collapsed ? '' : '退出登录' }}
+              </NButton>
+            </div>
           </n-layout-sider>
-          <n-layout py-4 px-1 sm:p-10>
+          <n-layout p-4 px-1 sm:p-10>
             <RouterView />
           </n-layout>
         </n-layout>

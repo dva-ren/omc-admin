@@ -1,6 +1,12 @@
 import type { Pager } from './base'
 
 export interface CommentModel {
+  ref: {
+    categoryId: string
+    id: string
+    slug: string
+    title: string
+  }
   refType: string
   state: number
   children: CommentModel[]

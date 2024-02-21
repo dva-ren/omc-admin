@@ -20,6 +20,7 @@ export class BaseModel {
 }
 
 export interface PagerDto {
-  size: number
-  page: number
+  size?: number
+  page?: number
+  state?: number
 }

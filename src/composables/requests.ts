@@ -56,12 +56,20 @@ class HttpRequest {
       // 返回数据
       return res.data
     }, (error: any) => {
-      if (error.response.status === 400)
+      if (error.response.status === 400) {
         message.error(error.response.data.message)
-      else if (error.response.status === 401)
-        message.error('当前未登录')
-      else
-        message.error('服务器错误')
+      }
+      else if (error.response.status === 422) {
+        message.error(error.response.data.message[0])
+      }
+      else if (error.response.status === 401) {
+        message.error(error.response.data.message)
+        setTimeout(() => {
+          location.href = '/login'
+          localStorage.removeItem(ACCESS_TOKEN)
+        }, 2000)
+      }
+      else { message.error('服务器错误') }
       return Promise.reject(error)
     })
   }

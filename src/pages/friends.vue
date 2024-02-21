@@ -1,55 +1,54 @@
 <script lang="ts" setup>
 import type { DataTableColumns, FormInst } from 'naive-ui'
-import { NAvatar, NButton, NTag } from 'naive-ui'
+import { NAvatar, NButton, NSpace, NTag } from 'naive-ui'
 import { Add } from '@vicons/ionicons5'
-import { dateFns, emptyValue } from '~/composables'
+import { dateFns } from '~/composables'
+import type { LinkModel, LinkModelDto } from '~/models/link'
+import { link } from '~/api'
+import { useAsyncData } from '~/composables/useAsyncData'
+import { LinkState, LinkStateMap } from '~/models/link'
+
 const route = useRoute()
 const router = useRouter()
-const friends = ref<Array<Friend>>([])
-const loading = ref(true)
 const showModal = ref(false)
 const message = useMessage()
-const status = computed(() => Number(route.query.status) || -1)
+const status = computed(() => Number(route.query.status ?? 0))
 const processing = ref(false)
 const formInstRef = ref<FormInst | null>(null)
 
-const initValue = {
+const initValue: LinkModelDto = {
   id: '',
   name: '',
   url: '',
   description: '',
   avatar: '',
+  email: '',
+  type: undefined,
   state: 0,
 }
 
-const friendForm = reactive<FriendForm>(initValue)
+const LinkForm = reactive<LinkModelDto>(initValue)
 
-const getFriends = async () => {
-  loading.value = true
-  const res = await queryFriends(status.value)
-  friends.value = res.data
-  loading.value = false
-}
+const { data: links, loading, refresh } = useAsyncData(() => link.getLinks({
+  state: status.value,
+}))
 
-const rowKey = (row: Note) => row.id
+const rowKey = (row: LinkModel) => row.id
 const resetForm = () => {
-  Object.assign(friendForm, initValue)
+  Object.assign(LinkForm, initValue)
 }
 const handleDelete = async (id: string) => {
   processing.value = true
-  const res = await deleteFriend(id)
-  if (res.code === 200) {
-    message.success('删除成功')
-    getFriends()
-  }
-  else {
-    message.error('未知错误，删除失败')
-  }
+  await link.deleteLink(id)
+  message.success('删除成功')
+  refresh()
   processing.value = false
 }
+
 watch(status, () => {
-  getFriends()
+  refresh()
 }, { immediate: true })
+
 const onPositiveClick = async () => {
   formInstRef.value?.validate(async (errors: any) => {
     if (errors) {
@@ -58,23 +57,17 @@ const onPositiveClick = async () => {
     else {
       try {
         loading.value = true
-        if (friendForm.id) {
-          const res = await updateFriend(friendForm)
-          if (res.code === 200) {
-            resetForm()
-            message.success('修改成功')
-            showModal.value = false
-          }
+        if (LinkForm.id) {
+          await link.updateLink(LinkForm.id, LinkForm)
+          resetForm()
+          message.success('修改成功')
         }
         else {
-          const res = await addFriend(friendForm)
-          if (res.code === 200) {
-            resetForm()
-            message.success('添加成功')
-            showModal.value = false
-          }
+          await link.addLink(LinkForm)
+          message.success('添加成功')
         }
-        getFriends()
+        showModal.value = false
+        refresh()
       }
       catch (e: any) {
         message.error(e)
@@ -96,39 +89,17 @@ const getType = (state: number) => {
     case 2: return 'error'
   }
 }
-const handleEdit = (row: Friend) => {
-  friendForm.id = row.id
-  friendForm.url = row.url
-  friendForm.description = row.description
-  friendForm.name = row.name
-  friendForm.avatar = row.avatar
-  friendForm.state = row.state
+const handleEdit = (row: LinkModel) => {
+  LinkForm.id = row.id
+  LinkForm.url = row.url
+  LinkForm.description = row.description
+  LinkForm.name = row.name
+  LinkForm.avatar = row.avatar
+  LinkForm.state = row.state
   showModal.value = true
 }
 
-const createColumns = (): DataTableColumns<Friend> => [
-  {
-    type: 'selection',
-  },
-  {
-    title: '昵称',
-    key: 'name',
-    width: 80,
-    render: (row) => {
-      if (row.url) {
-        return h(
-          'a',
-          {
-            href: row.url,
-            target: '_blank',
-            class: 'link',
-          },
-          { default: () => row.name },
-        )
-      }
-      return row.name
-    },
-  },
+const createColumns = (): DataTableColumns<LinkModel> => [
   {
     title: '头像',
     key: 'avatar',
@@ -136,9 +107,24 @@ const createColumns = (): DataTableColumns<Friend> => [
     render: row => h(NAvatar, { src: row.avatar, circle: true }),
   },
   {
+    title: '名称',
+    key: 'name',
+    width: 80,
+    render: row => row.name,
+  },
+  {
     title: 'url',
     key: 'url',
     width: 100,
+    render: row => h(
+      'a',
+      {
+        href: row.url,
+        target: '_blank',
+        class: 'link',
+      },
+      { default: () => row.url },
+    ),
   },
   {
     title: '简介',
@@ -153,37 +139,66 @@ const createColumns = (): DataTableColumns<Friend> => [
       type: getType(row.state),
     },
     {
-      default: () => {
-        switch (row.state) {
-          case 0: return '已通过'
-          case 1: return '待审核'
-          case 2: return '已拒绝'
-        }
-      },
+      default: () => LinkStateMap[row.state],
     }),
   },
   {
     title: '申请时间',
     width: 80,
     key: 'createTime',
-    render: row => dateFns(row.createTime).fromNow(),
+    render: row => dateFns(row.created).fromNow(),
   },
   {
     title: '操作',
     key: 'actions',
     fixed: 'right',
-    width: 60,
+    width: 80,
     render(row) {
-      return h(
-        NButton,
-        {
-          strong: true,
-          secondary: true,
-          size: 'tiny',
-          type: 'primary',
-          onClick: () => handleEdit(row),
-        },
-        { default: () => '编辑' },
+      return h(NSpace, {
+
+      },
+      {
+        default: () => [
+          row.state !== LinkState.Pass
+            ? h(
+              NButton,
+              {
+                strong: true,
+                secondary: true,
+                size: 'tiny',
+                type: 'primary',
+                ghost: true,
+                onClick: () => handleEdit(row),
+              },
+              { default: () => '通过' },
+            )
+            : null,
+          row.state === LinkState.Pass
+            ? h(NButton,
+              {
+                strong: true,
+                secondary: true,
+                size: 'tiny',
+                type: 'tertiary',
+                ghost: true,
+                onClick: () => handleEdit(row),
+              },
+              { default: () => '编辑' },
+            )
+            : null,
+          h(NButton,
+            {
+              strong: true,
+              secondary: true,
+              size: 'tiny',
+              type: 'error',
+              ghost: true,
+              onClick: () => handleDelete(row.id),
+            },
+            { default: () => '删除' },
+          ),
+        ],
+      },
       )
     },
   },
@@ -205,20 +220,12 @@ const onNegativeClick = () => {
   // resetForm()
   showModal.value = false
 }
-const options = [
-  {
-    label: '已通过',
-    value: 0,
-  },
-  {
-    label: '待审核',
-    value: 1,
-  },
-  {
-    label: '已删除',
-    value: 2,
-  },
-]
+type KeyType = keyof typeof LinkStateMap
+
+const options = (Object.keys(LinkStateMap)).map(key => ({
+  label: LinkStateMap[key as unknown as KeyType],
+  value: key,
+}))
 </script>
 
 <template>
@@ -243,8 +250,8 @@ const options = [
       p-2
       @update:value="handleUpdateValue"
     >
-      <n-tab name="-1">
-        全部
+      <n-tab name="0">
+        朋友们
       </n-tab>
       <n-tab name="1">
         待审核
@@ -254,7 +261,7 @@ const options = [
       remote
       size="small"
       :columns="createColumns()"
-      :data="friends"
+      :data="links?.data"
       :row-key="rowKey"
       :loading="loading"
       row-class-name="table-row"
@@ -270,21 +277,21 @@ const options = [
       @negative-click="onNegativeClick"
       @after-leave="onNegativeClick"
     >
-      <n-form ref="formInstRef" :model="friendForm" :rules="rules">
-        <n-form-item label="昵称" required path="author">
-          <n-input v-model:value="friendForm.name" type="text" placeholder="昵称" />
+      <n-form ref="formInstRef" :model="LinkForm" :rules="rules">
+        <n-form-item label="名称" required path="author">
+          <n-input v-model:value="LinkForm.name" type="text" placeholder="昵称" />
         </n-form-item>
         <n-form-item label="状态" required path="state">
-          <n-select v-model:value="friendForm.state" :options="options" :default-value="friendForm.state" :consistent-menu-width="false" />
+          <n-select v-model:value="LinkForm.state" :options="options" :consistent-menu-width="false" />
         </n-form-item>
         <n-form-item label="网址" path="origin">
-          <n-input v-model:value="friendForm.url" type="text" placeholder="网站地址" />
+          <n-input v-model:value="LinkForm.url" type="text" placeholder="网站地址" />
         </n-form-item>
         <n-form-item label="头像地址" path="avatar">
-          <n-input v-model:value="friendForm.avatar" type="text" placeholder="头像地址" />
+          <n-input v-model:value="LinkForm.avatar" type="text" placeholder="头像地址" />
         </n-form-item>
         <n-form-item label="简介" required path="content">
-          <n-input v-model:value="friendForm.description" type="textarea" placeholder="网站简介" />
+          <n-input v-model:value="LinkForm.description" type="textarea" placeholder="网站简介" />
         </n-form-item>
       </n-form>
     </n-modal>

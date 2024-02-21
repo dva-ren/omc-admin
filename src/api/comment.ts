@@ -13,14 +13,14 @@ export const getRecentlyComments = (data?: PagerDto & CommentStatePatchDto) => {
   return http.request<PaginateResult<CommentModel>>({
     url: '/comment',
     method: 'GET',
-    data,
+    params: data,
   })
 }
 
 export const modifyCommentState = (id: string, data: CommentStatePatchDto) => {
   return http.request<CommentModel>({
     url: `/comment/${id}`,
-    method: 'PUT',
+    method: 'PATCH',
     data,
   })
 }

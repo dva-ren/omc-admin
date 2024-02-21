@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NGradientText, NImage, NPopconfirm } from 'naive-ui'
-import IpInfo from '~/components/IpInfo.vue'
+import { NAvatar, NSpace } from 'naive-ui'
+// import IpInfo from '~/components/IpInfo.vue'
 import { deleteComment, getRecentlyComments, modifyCommentState } from '~/api'
-import { dateFns, emptyValue } from '~/composables'
+// import { dateFns, emptyValue } from '~/composables'
 import type { CommentModel } from '~/models'
+import { CommentState } from '~/models'
+import MCommentContent from '~/components/CommentContent.vue'
+import MLink from '~/components/Link.vue'
+import { CommentEvent } from '~/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -30,10 +34,6 @@ const pagination = reactive({
 const message = useMessage()
 const state = computed(() => Number(route.query.state) || 0)
 const processing = ref(false)
-const view = reactive({
-  visible: false,
-  comment: {} as CommentModel,
-})
 
 const getComments = async () => {
   loadding.value = true
@@ -54,38 +54,85 @@ watch(state, () => {
 
 const rowKey = (row: CommentModel) => row.id
 
-const handleDelete = async () => {
+const handleDelete = async (id: string) => {
   processing.value = true
-  await deleteComment(view.comment.id)
+  await deleteComment(id)
   message.success('删除成功')
   getComments()
-  view.visible = false
   processing.value = false
 }
 
 const handleUpdateValue = (value: string) => {
   router.push(`/comment?state=${value}`)
 }
-const updateStatus = async (state: number) => {
+const updateStatus = async (comment: CommentModel, state: CommentState) => {
+  if (comment.state === state)
+    return
   processing.value = true
-  await modifyCommentState(view.comment.id, { state })
+  await modifyCommentState(comment.id, { state })
   message.success('操作成功')
-  view.visible = false
   processing.value = false
   getComments()
 }
+
 const createColumns = (): DataTableColumns<CommentModel> => [
   {
     type: 'selection',
   },
   {
     key: 'avatar',
-    render: row => h(NImage, {
+    render: row => h(NAvatar, {
       src: row.avatar,
-      style: 'width: 30px; height: 30px; border-radius: 50%;',
+      round: true,
     }),
+    width: 60,
   },
-
+  {
+    key: 'author',
+    title: '作者',
+    render: row => [
+      h(NSpace, { vertical: true, size: 'small' }, {
+        default: () => [
+          h(MLink, {
+            to: row.url,
+            text: row.author,
+          }),
+          h(MLink, {
+            to: `mailto:${row.mail}`,
+            text: row.mail,
+          }),
+          h('span',
+            {
+              className: 'ml-1 text-gray-500',
+            }, { default: () => row.ip }),
+        ],
+      }),
+    ],
+  },
+  {
+    key: 'content',
+    title: '内容',
+    render: row => [
+      h(MCommentContent, {
+        comment: row,
+        onActive: (e) => {
+          switch (e) {
+            case CommentEvent.reply:
+              break
+            case CommentEvent.junk:
+              updateStatus(row, CommentState.Junk)
+              break
+            case CommentEvent.delete:
+              handleDelete(row.id)
+              break
+            case CommentEvent.read:
+              updateStatus(row, CommentState.Read)
+              break
+          }
+        },
+      }),
+    ],
+  },
 ]
 </script>
 
@@ -121,34 +168,6 @@ const createColumns = (): DataTableColumns<CommentModel> => [
       :loading="loadding"
       row-class-name="table-row"
     />
-    <n-modal
-      v-model:show="view.visible"
-      :mask-closable="false"
-      preset="card"
-      max-w-160
-      title="查看评论"
-    >
-      <n-space mt-4 justify="space-between">
-        <NPopconfirm
-          @positive-click="handleDelete"
-        >
-          <template #trigger>
-            <NButton strong secondary type="error" :loading="processing">
-              删除
-            </NButton>
-          </template>
-          确定删除吗？
-        </NPopconfirm>
-        <n-space>
-          <NButton v-if="view.comment.state !== 1" strong secondary type="success" :loading="processing" @click="updateStatus(1)">
-            已读
-          </NButton>
-          <NButton v-if="view.comment.state !== 2" strong secondary type="warning" :loading="processing" @click="updateStatus(2)">
-            垃圾评论
-          </NButton>
-        </n-space>
-      </n-space>
-    </n-modal>
   </div>
 </template>
 
