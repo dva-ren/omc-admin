@@ -9,6 +9,9 @@ dayjs.extend(relativeTime)
 
 export const dateFns = dayjs
 
-export function formateDate(date: Date | string) {
+export function formateDate(date: Date | string | null) {
   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+}
+export function isOutOfDate(date: Date | string) {
+  return dateFns().isAfter(dateFns(date))
 }

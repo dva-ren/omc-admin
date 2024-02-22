@@ -3,7 +3,7 @@ import type { DataTableColumns } from 'naive-ui'
 import { NButton, NIcon, NPopconfirm, NSpace } from 'naive-ui'
 import { Pin } from '@vicons/tabler'
 import type { PostModel } from '~/models'
-import { dateFns, emptyValue } from '~/composables'
+import { dateFns, emptyValue, isOutOfDate } from '~/composables'
 import { deletePost, getPostList } from '~/api'
 
 const articles = ref<Array<PostModel>>([])
@@ -52,12 +52,15 @@ const createColumns = (): DataTableColumns<PostModel> => [
     width: 20,
     render: row => [
       row.pin
-        ? h(NIcon, {
-          component: Pin,
-          size: 16,
-          color: 'green',
-        })
+        ? (!isOutOfDate(row.pin)
+            ? h(NIcon, {
+              component: Pin,
+              size: 16,
+              color: 'green',
+            })
+            : '')
         : '',
+
     ],
   },
   {

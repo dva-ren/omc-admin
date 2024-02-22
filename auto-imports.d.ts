@@ -46,6 +46,7 @@ declare global {
   const ipLocationCacheMap: typeof import('./src/composables/utils')['ipLocationCacheMap']
   const isDark: typeof import('./src/composables/dark')['isDark']
   const isDefined: typeof import('@vueuse/core')['isDefined']
+  const isOutOfDate: typeof import('./src/composables/date')['isOutOfDate']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
@@ -127,6 +128,7 @@ declare global {
   const useArrayReduce: typeof import('@vueuse/core')['useArrayReduce']
   const useArraySome: typeof import('@vueuse/core')['useArraySome']
   const useArrayUnique: typeof import('@vueuse/core')['useArrayUnique']
+  const useAsyncData: typeof import('./src/composables/useAsyncData')['useAsyncData']
   const useAsyncQueue: typeof import('@vueuse/core')['useAsyncQueue']
   const useAsyncState: typeof import('@vueuse/core')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
@@ -337,6 +339,7 @@ declare module 'vue' {
     readonly ipLocationCacheMap: UnwrapRef<typeof import('./src/composables/utils')['ipLocationCacheMap']>
     readonly isDark: UnwrapRef<typeof import('./src/composables/dark')['isDark']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
+    readonly isOutOfDate: UnwrapRef<typeof import('./src/composables/date')['isOutOfDate']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
@@ -418,6 +421,7 @@ declare module 'vue' {
     readonly useArrayReduce: UnwrapRef<typeof import('@vueuse/core')['useArrayReduce']>
     readonly useArraySome: UnwrapRef<typeof import('@vueuse/core')['useArraySome']>
     readonly useArrayUnique: UnwrapRef<typeof import('@vueuse/core')['useArrayUnique']>
+    readonly useAsyncData: UnwrapRef<typeof import('./src/composables/useAsyncData')['useAsyncData']>
     readonly useAsyncQueue: UnwrapRef<typeof import('@vueuse/core')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('@vueuse/core')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>

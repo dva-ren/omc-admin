@@ -4,7 +4,7 @@ import { NButton, NIcon, NPopconfirm, NSpace } from 'naive-ui'
 import { EyeOff, Lock } from '@vicons/tabler'
 import type { NoteModel } from '~/models'
 import { deleteNote, getNoteList } from '~/api'
-import { dateFns, emptyValue } from '~/composables'
+import { dateFns, emptyValue, isOutOfDate } from '~/composables'
 
 const notes = ref<Array<NoteModel>>([])
 
@@ -41,10 +41,6 @@ watch(pagination, () => {
 
 const rowKey = (row: NoteModel) => row.id
 
-function isSecret(row: NoteModel) {
-  return dateFns().isBefore(dateFns(row.secret))
-}
-
 const handleDelete = async (row: NoteModel) => {
   await deleteNote(row.id)
   message.success('删除成功')
@@ -66,12 +62,14 @@ const createColumns = (): DataTableColumns<NoteModel> => [
           color: 'green',
         })
         : '',
-      isSecret(row)
-        ? h(NIcon, {
-          component: Lock,
-          size: 15,
-          color: 'red',
-        })
+      row.secret
+        ? !isOutOfDate(row.secret)
+            ? h(NIcon, {
+              component: Lock,
+              size: 15,
+              color: 'red',
+            })
+            : ''
         : '',
     ],
 
