@@ -11,9 +11,9 @@ import { MessageReport, Messages } from '@vicons/tabler'
 import { NIcon } from 'naive-ui'
 import type { Component } from 'vue'
 import { useMasterStore } from '~/store'
+import type { SystemState } from '~/models'
 
 const router = useRouter()
-const message = useMessage()
 const masterStore = useMasterStore()
 const go = (url: string | undefined) => {
   if (!url)
@@ -116,12 +116,7 @@ const displayList: DisplayList[] = [
 ]
 
 const queryState = async () => {
-  const res = await querySystemState()
-  if (res.code !== 200) {
-    message.error(res.msg)
-    return
-  }
-  Object.assign(state, res.data)
+
 }
 queryState()
 </script>

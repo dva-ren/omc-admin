@@ -26,7 +26,7 @@ class HttpRequest {
   constructor() {
     this.baseUrl = 'http://localhost:2333/'
     if (import.meta.env.MODE === 'production')
-      this.baseUrl = 'https://api.dvaren.xyz/admin'
+      this.baseUrl = 'https://api.dvaren.xyz/api/v1/'
   }
 
   getInsideConfig() {

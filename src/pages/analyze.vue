@@ -4,16 +4,16 @@ import UaParser from 'ua-parser-js'
 import type { DataTableColumns } from 'naive-ui'
 import IpInfo from '~/components/IpInfo.vue'
 
-import type { Log } from '~/types'
+// import type { Log } from '~/types'
 import { dateFns } from '~/composables'
-import { clearIps, queryIps, queryLogList } from '~/api'
+// import { clearIps, queryIps, queryLogList } from '~/api'
 
-interface Logger extends Log {
-  device: string
-  os: string
-  browser: string
-  cpu: string
-}
+// interface Logger extends Log {
+//   device: string
+//   os: string
+//   browser: string
+//   cpu: string
+// }
 const pagination = reactive({
   page: 1,
   pageSize: 30,
@@ -32,7 +32,7 @@ const pagination = reactive({
 })
 const loading = ref(false)
 const message = useMessage()
-const logList = ref<Logger[]>([])
+const logList = ref([])
 const ips = ref<Array<string>>([])
 const text = ref('')
 const searchIp = ref('')
@@ -40,18 +40,18 @@ const searchIp = ref('')
 const getLogs = async (pageNum: number, pageSize: number) => {
   loading.value = true
   try {
-    const res = await queryLogList(pageNum, pageSize, searchIp.value)
-    pagination.itemCount = res.data.total
-    logList.value = res.data.list.map((log) => {
-      const ua = UaParser(log.ua)
-      return {
-        ...log,
-        browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
-        device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
-        os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
-        cpu: ua.cpu.architecture || '-',
-      }
-    })
+    // const res = await queryLogList(pageNum, pageSize, searchIp.value)
+    // pagination.itemCount = res.data.total
+    // logList.value = res.data.list.map((log) => {
+    //   const ua = UaParser(log.ua)
+    //   return {
+    //     ...log,
+    //     browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
+    //     device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
+    //     os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
+    //     cpu: ua.cpu.architecture || '-',
+    //   }
+    // })
   }
   finally {
     loading.value = false
@@ -59,8 +59,8 @@ const getLogs = async (pageNum: number, pageSize: number) => {
 }
 
 const getIps = async () => {
-  const res = await queryIps()
-  ips.value = res.data
+  // const res = await queryIps()
+  // ips.value = res.data
 }
 
 const handleSearch = () => {
@@ -73,7 +73,7 @@ const handleSearch = () => {
   getIps()
 }
 
-const createColumns = (): DataTableColumns<Logger> => [
+const createColumns = (): DataTableColumns => [
   {
     title: '时间',
     key: 'createTime',
@@ -138,12 +138,12 @@ const refresh = () => {
   getLogs(pagination.page, pagination.pageSize)
 }
 const handlePositiveClick = () => {
-  clearIps().then((res) => {
-    if (res.code === 200) {
-      message.success('清理成功')
-      ips.value = []
-    }
-  })
+  // clearIps().then((res) => {
+  //   if (res.code === 200) {
+  //     message.success('清理成功')
+  //     ips.value = []
+  //   }
+  // })
 }
 </script>
 

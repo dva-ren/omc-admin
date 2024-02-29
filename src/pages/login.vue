@@ -6,8 +6,10 @@ import { ACCESS_TOKEN } from '~/constants/system'
 const router = useRouter()
 const message = useMessage()
 const processing = ref(false)
+const masterStore = useMasterStore()
+
 const loginForm = reactive({
-  username: 'test',
+  username: masterStore.masterInfo.username,
   password: '',
 })
 
