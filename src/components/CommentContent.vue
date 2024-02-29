@@ -1,16 +1,20 @@
 <script lang="ts" setup>
 import type { CommentModel } from '~/models'
 import { CommentState } from '~/models'
+import { useMasterStore } from '~/store'
 import { CommentEvent } from '~/types'
+import { joinUrl } from '~/composables/utils'
+
 const props = defineProps<{
   comment: CommentModel
   onActive: (e: CommentEvent) => void
 }>()
+const masterStore = useMasterStore()
 </script>
 
 <template>
   <div>
-    <div>9天前 于 <Link :to="props.comment.ref.slug" :text="props.comment.ref.title" /></div>
+    <div>9天前 于 <Link target="_blank" :to="joinUrl(masterStore.masterInfo.url, `${props.comment.refType}/${props.comment.ref.id}`)" :text="props.comment.ref.title" /></div>
     <div my-1>
       {{ props.comment.text }}
     </div>

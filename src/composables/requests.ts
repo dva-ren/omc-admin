@@ -64,10 +64,12 @@ class HttpRequest {
       }
       else if (error.response.status === 401) {
         message.error(error.response.data.message)
-        setTimeout(() => {
-          location.href = '/login'
-          localStorage.removeItem(ACCESS_TOKEN)
-        }, 2000)
+        if (location.pathname !== '/init' && location.pathname !== '/login') {
+          setTimeout(() => {
+            location.href = '/login'
+            localStorage.removeItem(ACCESS_TOKEN)
+          }, 2000)
+        }
       }
       else { message.error('服务器错误') }
       return Promise.reject(error)

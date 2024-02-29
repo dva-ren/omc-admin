@@ -18,12 +18,16 @@ export const useMasterStore = defineStore('master', () => {
   })
 
   async function initMasterInfo() {
-    const token = localStorage.getItem(ACCESS_TOKEN)
-    if (!token)
-      return
-    const master = await getMasterInfo()
-    if (master)
-      Object.assign(masterInfo, master)
+    // const token = localStorage.getItem(ACCESS_TOKEN)
+    try {
+      const master = await getMasterInfo()
+      if (master)
+        Object.assign(masterInfo, master)
+    }
+    catch (e: any) {
+      if (e.response.status === 400 && location.pathname !== '/init')
+        location.replace('/init')
+    }
   }
   initMasterInfo()
   function logout() {

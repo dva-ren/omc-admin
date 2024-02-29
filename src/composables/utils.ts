@@ -14,3 +14,9 @@ export function randomNumber(min: number, max: number) {
 export function randomImageUrl() {
   return images.ai[randomNumber(0, images.ai.length)]
 }
+
+export function joinUrl(baseUrl: string, relativeUrl: string) {
+  if (!baseUrl || !relativeUrl)
+    return ''
+  return `${baseUrl.replace(/\/$/, '')}/${relativeUrl.replace(/^\//, '')}`
+}

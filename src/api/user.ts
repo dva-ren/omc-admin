@@ -44,3 +44,11 @@ export const changePassword = (password: string) => {
     },
   })
 }
+
+export const createMaster = (data: UserDto) => {
+  return http.request<LoginResponse>({
+    url: '/master',
+    method: 'POST',
+    data,
+  })
+}

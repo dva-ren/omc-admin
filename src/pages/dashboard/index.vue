@@ -142,7 +142,7 @@ queryState()
         上次登录IP: {{ masterStore.masterInfo.lastLoginIp }}
       </div>
       <div text-gray-5>
-        上次登录时间: {{ masterStore.masterInfo.lastLoginTime }}
+        上次登录时间: {{ formateDate(masterStore.masterInfo.lastLoginTime) }}
       </div>
     </div>
     <div text-xl py-2>

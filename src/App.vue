@@ -22,6 +22,7 @@ import {
   Pencil,
 } from '@vicons/tabler'
 import { useMasterStore } from './store'
+
 const masterStore = useMasterStore()
 
 const collapsed = ref(false)
@@ -138,6 +139,7 @@ const menuOptions: MenuOption[] = [
     href: '/setting/user',
   },
 ]
+const route = useRoute()
 </script>
 
 <template>
@@ -146,6 +148,7 @@ const menuOptions: MenuOption[] = [
       <main h-full>
         <n-layout has-sider h-full>
           <n-layout-sider
+            v-if="route.path !== '/login' && route.path !== '/init'"
             bordered
             collapse-mode="width"
             :collapsed-width="64"
