@@ -33,6 +33,9 @@ const handleUpdateValue = (value: string) => {
     <n-tab name="security">
       安全
     </n-tab>
+    <n-tab name="keys">
+      KEYS
+    </n-tab>
   </n-tabs>
   <div p-4>
     <RouterView />
