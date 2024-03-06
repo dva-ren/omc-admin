@@ -47,7 +47,7 @@ const handleDelete = async (id: string) => {
 
 watch(status, () => {
   refresh()
-}, { immediate: true })
+})
 
 const onPositiveClick = async () => {
   formInstRef.value?.validate(async (errors: any) => {
@@ -163,11 +163,10 @@ const createColumns = (): DataTableColumns<LinkModel> => [
             ? h(
               NButton,
               {
-                strong: true,
+                quaternary: true,
                 secondary: true,
                 size: 'tiny',
                 type: 'primary',
-                ghost: true,
                 onClick: () => handleEdit(row),
               },
               { default: () => '通过' },
@@ -176,11 +175,10 @@ const createColumns = (): DataTableColumns<LinkModel> => [
           row.state === LinkState.Pass
             ? h(NButton,
               {
-                strong: true,
+                quaternary: true,
                 secondary: true,
                 size: 'tiny',
                 type: 'tertiary',
-                ghost: true,
                 onClick: () => handleEdit(row),
               },
               { default: () => '编辑' },
@@ -188,11 +186,10 @@ const createColumns = (): DataTableColumns<LinkModel> => [
             : null,
           h(NButton,
             {
-              strong: true,
+              quaternary: true,
               secondary: true,
               size: 'tiny',
               type: 'error',
-              ghost: true,
               onClick: () => handleDelete(row.id),
             },
             { default: () => '删除' },

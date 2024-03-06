@@ -2,49 +2,46 @@
 import type { DataTableColumns } from 'naive-ui'
 import { NButton, NIcon, NPopconfirm, NSpace } from 'naive-ui'
 import { EyeOff, Lock } from '@vicons/tabler'
+import Link from '~/components/Link.vue'
 import type { NoteModel } from '~/models'
 import { deleteNote, getNoteList } from '~/api'
 import { dateFns, emptyValue, isOutOfDate } from '~/composables'
+import { useMasterStore } from '~/store'
 
-const notes = ref<Array<NoteModel>>([])
-
-const loadding = ref(true)
+const masterStore = useMasterStore()
 const pagination = reactive({
   page: 1,
   pageSize: 15,
   showSizePicker: true,
   pageSizes: [15, 20, 30],
   itemCount: 0,
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
   prefix: () => `共${pagination.itemCount}条记录`,
 })
 const message = useMessage()
 const router = useRouter()
 
-const getNotes = async () => {
-  loadding.value = true
+const { data: notes, loading, refresh } = useAsyncData(async () => {
   const res = await getNoteList(pagination.page, pagination.pageSize)
   pagination.itemCount = res.pagination.total
-  notes.value = res.data
-  // console.log(res)
-  loadding.value = false
+  return res.data
+})
+
+function onPageChange(page: number) {
+  pagination.page = page
+  refresh()
 }
-watch(pagination, () => {
-  getNotes()
-}, { immediate: true })
+function onPageSizeChange(pageSize: number) {
+  pagination.pageSize = pageSize
+  pagination.page = 1
+  refresh()
+}
 
 const rowKey = (row: NoteModel) => row.id
 
 const handleDelete = async (row: NoteModel) => {
   await deleteNote(row.id)
   message.success('删除成功')
-  getNotes()
+  refresh()
 }
 
 const createColumns = (): DataTableColumns<NoteModel> => [
@@ -79,7 +76,16 @@ const createColumns = (): DataTableColumns<NoteModel> => [
     key: 'title',
     width: 150,
     ellipsis: true,
-    render: row => row.title,
+    render: row => masterStore.masterInfo.url
+      ? h(
+        Link,
+        {
+          to: `${masterStore.masterInfo.url}/note/${row.nid}`,
+          text: row.title,
+          target: '_blank',
+        },
+      )
+      : row.title,
   },
 
   {
@@ -162,13 +168,16 @@ const createColumns = (): DataTableColumns<NoteModel> => [
       日记 · 管理
     </div>
     <n-data-table
+      v-if="notes"
       remote
       size="small"
       :columns="createColumns()"
       :data="notes"
       :pagination="pagination"
+      :on-page-change="onPageChange"
+      :on-page-size-change="onPageSizeChange"
       :row-key="rowKey"
-      :loading="loadding"
+      :loading="loading"
       :scroll-x="100"
       row-class-name="table-row"
     />

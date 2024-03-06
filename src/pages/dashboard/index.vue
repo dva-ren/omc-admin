@@ -11,7 +11,8 @@ import { MessageReport, Messages } from '@vicons/tabler'
 import { NIcon } from 'naive-ui'
 import type { Component } from 'vue'
 import { useMasterStore } from '~/store'
-import type { SystemState } from '~/models'
+import type { StatModel } from '~/models'
+import { getAggregateStat } from '~/api'
 
 const router = useRouter()
 const masterStore = useMasterStore()
@@ -20,30 +21,24 @@ const go = (url: string | undefined) => {
     return
   router.push(url)
 }
-const state = reactive<SystemState>({
+
+const state = reactive<StatModel>({
   allComments: 0,
   categories: 0,
   comments: 0,
-  link_apply: 0,
+  linkApply: 0,
   links: 0,
   notes: 0,
-  pages: 0,
   posts: 0,
   says: 0,
-  recently: 0,
   unreadComments: 0,
-  unreadFriends: 0,
-  friends: 0,
   online: 0,
   todayMaxOnline: 0,
   todayOnlineTotal: 0,
-  callTime: 0,
-  uv: 0,
-  todayIpAccessCount: 0,
 })
 interface DisplayList {
   title: string
-  key: keyof SystemState
+  key: keyof StatModel
   edit?: string
   view: string
   manage?: string
@@ -105,20 +100,20 @@ const displayList: DisplayList[] = [
   },
   {
     title: '友链',
-    key: 'friends',
+    key: 'links',
     bottonText: '查看',
     edit: '/friends?status=1',
     view: '',
     manage: '',
-    fresh: () => state.unreadFriends,
+    fresh: () => state.linkApply,
     icon: PeopleOutline,
   },
 ]
 
-const queryState = async () => {
-
-}
-queryState()
+useAsyncData(async () => {
+  const res = await getAggregateStat()
+  Object.assign(state, res)
+})
 </script>
 
 <template>

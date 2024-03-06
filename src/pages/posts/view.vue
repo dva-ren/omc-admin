@@ -5,43 +5,42 @@ import { Pin } from '@vicons/tabler'
 import type { PostModel } from '~/models'
 import { dateFns, emptyValue, isOutOfDate } from '~/composables'
 import { deletePost, getPostList } from '~/api'
+import { useMasterStore } from '~/store'
+import Link from '~/components/Link.vue'
 
-const articles = ref<Array<PostModel>>([])
-const loadding = ref(true)
 const pagination = reactive({
   page: 1,
   pageSize: 15,
   showSizePicker: true,
   pageSizes: [15, 20, 50],
   itemCount: 0,
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
   prefix: () => `共${pagination.itemCount}条记录`,
 })
 const message = useMessage()
 const router = useRouter()
-
-const getArticles = async () => {
+const masterStore = useMasterStore()
+const { data: articles, refresh, loading } = useAsyncData(async () => {
   const res = await getPostList(pagination.page, pagination.pageSize)
   pagination.itemCount = res.pagination.total
-  articles.value = res.data
-  loadding.value = false
+  return res.data
+}, [])
+
+function onPageChange(page: number) {
+  pagination.page = page
+  refresh()
 }
-watch(pagination, () => {
-  getArticles()
-}, { immediate: true })
+function onPageSizeChange(pageSize: number) {
+  pagination.pageSize = pageSize
+  pagination.page = 1
+  refresh()
+}
 
 const rowKey = (row: PostModel) => row.id
 
 const handleDelete = async (row: PostModel) => {
   await deletePost(row.id)
   message.success('删除成功')
-  getArticles()
+  refresh()
 }
 const createColumns = (): DataTableColumns<PostModel> => [
   {
@@ -68,7 +67,16 @@ const createColumns = (): DataTableColumns<PostModel> => [
     key: 'title',
     width: 220,
     ellipsis: true,
-    render: row => row.title,
+    render: row => masterStore.masterInfo.url
+      ? h(
+        Link,
+        {
+          to: `${masterStore.masterInfo.url}/post/${row.id}`,
+          text: row.title,
+          target: '_blank',
+        },
+      )
+      : row.title,
   },
   {
     title: '分类',
@@ -156,13 +164,16 @@ const createColumns = (): DataTableColumns<PostModel> => [
       博文 · 管理
     </div>
     <n-data-table
+      v-if="articles"
       remote
       size="small"
       :columns="createColumns()"
       :data="articles"
       :pagination="pagination"
+      :on-page-change="onPageChange"
+      :on-page-size-change="onPageSizeChange"
       :row-key="rowKey"
-      :loading="loadding"
+      :loading="loading"
       row-class-name="table-row"
       :scroll-x="100"
       width="100"

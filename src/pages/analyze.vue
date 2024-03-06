@@ -1,19 +1,21 @@
 <script lang="ts" setup>
-import { ReloadOutline } from '@vicons/ionicons5'
+import { ReloadOutline, Trash } from '@vicons/ionicons5'
 import UaParser from 'ua-parser-js'
 import type { DataTableColumns } from 'naive-ui'
 import IpInfo from '~/components/IpInfo.vue'
 
 // import type { Log } from '~/types'
 import { dateFns } from '~/composables'
+import { clearLogs, deleteLogs, queryLogs } from '~/api'
+import type { LogModel } from '~/models'
 // import { clearIps, queryIps, queryLogList } from '~/api'
 
-// interface Logger extends Log {
-//   device: string
-//   os: string
-//   browser: string
-//   cpu: string
-// }
+interface Logger extends LogModel {
+  device: string
+  os: string
+  browser: string
+  cpu: string
+}
 const pagination = reactive({
   page: 1,
   pageSize: 30,
@@ -32,26 +34,30 @@ const pagination = reactive({
 })
 const loading = ref(false)
 const message = useMessage()
-const logList = ref([])
+const logList = ref<Logger[]>([])
 const ips = ref<Array<string>>([])
 const text = ref('')
 const searchIp = ref('')
+const checkedRowKeys = ref<Array<string>>([])
 
 const getLogs = async (pageNum: number, pageSize: number) => {
   loading.value = true
   try {
-    // const res = await queryLogList(pageNum, pageSize, searchIp.value)
-    // pagination.itemCount = res.data.total
-    // logList.value = res.data.list.map((log) => {
-    //   const ua = UaParser(log.ua)
-    //   return {
-    //     ...log,
-    //     browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
-    //     device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
-    //     os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
-    //     cpu: ua.cpu.architecture || '-',
-    //   }
-    // })
+    const res = await queryLogs({
+      page: pagination.page,
+      size: pagination.pageSize,
+    })
+    pagination.itemCount = res.pagination.total
+    logList.value = res.data.map((log) => {
+      const ua = UaParser(log.ua)
+      return {
+        ...log,
+        browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
+        device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
+        os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
+        cpu: ua.cpu.architecture || '-',
+      }
+    })
   }
   finally {
     loading.value = false
@@ -73,12 +79,15 @@ const handleSearch = () => {
   getIps()
 }
 
-const createColumns = (): DataTableColumns => [
+const createColumns = (): DataTableColumns<Logger> => [
+  {
+    type: 'selection',
+  },
   {
     title: '时间',
-    key: 'createTime',
+    key: 'created',
     width: 100,
-    render: row => dateFns(row.createTime).format('MM-DD HH:mm:ss'),
+    render: row => dateFns(row.created).format('MM-DD HH:mm:ss'),
   },
   {
     title: 'IP',
@@ -137,13 +146,19 @@ const refresh = () => {
   pagination.page = 1
   getLogs(pagination.page, pagination.pageSize)
 }
-const handlePositiveClick = () => {
-  // clearIps().then((res) => {
-  //   if (res.code === 200) {
-  //     message.success('清理成功')
-  //     ips.value = []
-  //   }
-  // })
+async function handlePositiveClick() {
+  await clearLogs()
+  message.success('清理成功')
+  refresh()
+}
+
+async function handleDelete() {
+  if (checkedRowKeys.value.length === 0)
+    return message.warning('请选择要删除的日志')
+  await deleteLogs(checkedRowKeys.value)
+  message.success('删除成功')
+  checkedRowKeys.value = []
+  refresh()
 }
 </script>
 
@@ -154,23 +169,30 @@ const handlePositiveClick = () => {
         数据
       </div>
       <div>
-        <!-- 刷新按钮 -->
-        <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="refresh">
-          <template #icon>
-            <n-icon><ReloadOutline /></n-icon>
-          </template>
-        </NButton>
+        <n-space>
+          <NButton v-if="checkedRowKeys.length" type="error" circle size="large" :loading="loading" :disabled="loading" @click="handleDelete">
+            <template #icon>
+              <n-icon><Trash /></n-icon>
+            </template>
+          </NButton>
+          <!-- 刷新按钮 -->
+          <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="refresh">
+            <template #icon>
+              <n-icon><ReloadOutline /></n-icon>
+            </template>
+          </NButton>
+        </n-space>
       </div>
     </div>
     <div flex justify-between flex-col sm:flex-row>
       <div>
-        <span>近期访问ip</span>
+        <div>近期访问ip</div>
         <n-popconfirm
           @positive-click="handlePositiveClick"
         >
           <template #trigger>
             <n-button text ml-2 text-red>
-              清除
+              清除全部日志
             </n-button>
           </template>
           确定清除？
@@ -194,6 +216,7 @@ const handlePositiveClick = () => {
       </div>
     </div>
     <n-data-table
+      v-model:checked-row-keys="checkedRowKeys"
       remote
       size="small"
       :columns="createColumns()"

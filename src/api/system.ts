@@ -1,4 +1,5 @@
 import http from '~/composables/requests'
+import type { LogModel, LogQueryDto, PaginateResult } from '~/models'
 
 export const getKeys = () => {
   return http.request<Record<string, any>>({
@@ -34,5 +35,33 @@ export const deleteKey = (key: string) => {
   return http.request<Record<string, any>>({
     url: `/system/keys/${key}`,
     method: 'DELETE',
+  })
+}
+
+export const deleteLogs = (ids: string[]) => {
+  return http.request({
+    url: '/log/deletemany',
+    method: 'DELETE',
+    data: {
+      ids,
+    },
+  })
+}
+
+export const queryLogs = (query: LogQueryDto) => {
+  return http.request<PaginateResult<LogModel>>({
+    url: '/log',
+    method: 'GET',
+    params: query,
+  })
+}
+
+export const clearLogs = (date?: Date | string) => {
+  return http.request({
+    url: '/log/clear',
+    method: 'DELETE',
+    params: {
+      date,
+    },
   })
 }

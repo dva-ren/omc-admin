@@ -31,3 +31,25 @@ export const deleteComment = (id: string) => {
     method: 'DELETE',
   })
 }
+
+export const deleteComments = (ids: string[]) => {
+  return http.request({
+    url: '/comment/deletemany',
+    method: 'DELETE',
+    data: {
+      ids,
+    },
+  })
+}
+interface TextOnlyDto {
+  text: string
+  source?: string
+}
+
+export const masterReplyComment = (id: string, data: TextOnlyDto) => {
+  return http.request<CommentModel>({
+    url: `/comment/master/reply/${id}`,
+    method: 'POST',
+    data,
+  })
+}

@@ -1,5 +1,5 @@
-export function useAsyncData<T>(fetchData: () => Promise<T>) {
-  const data = ref<T | null>(null)
+export function useAsyncData<T>(fetchData: () => Promise<T>, defaultValue?: T) {
+  const data = ref<T | null>(defaultValue ?? null)
   const loading = ref<boolean>(true)
   const error = ref<any>(null)
 
@@ -17,6 +17,5 @@ export function useAsyncData<T>(fetchData: () => Promise<T>) {
 
   // 在创建时自动加载数据
   refresh()
-
   return { data, loading, error, refresh }
 }

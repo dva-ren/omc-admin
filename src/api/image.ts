@@ -43,7 +43,9 @@ export const deleteMany = (ids: string[]) => {
   return http.request({
     url: '/images/deletemany',
     method: 'DELETE',
-    data: ids,
+    data: {
+      ids,
+    },
   })
 }
 

@@ -21,7 +21,6 @@ const categoryForm = reactive({
   type: CategoryType.Category,
   slug: undefined,
 })
-
 const getCategories = async () => {
   const res = await getAllCategories()
   categories.value = res.data

@@ -14,6 +14,7 @@ export interface UserModel extends BaseUserModel {
   lastLoginTime: string
   lastLoginIp?: string
   apiToken?: string
+  isMaster?: boolean
 }
 
 export type UserDto = Partial<BaseUserModel>

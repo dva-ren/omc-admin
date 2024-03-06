@@ -7,9 +7,9 @@ const router = useRouter()
 const message = useMessage()
 const processing = ref(false)
 const masterStore = useMasterStore()
-
+const usename = computed(() => masterStore.username)
 const loginForm = reactive({
-  username: masterStore.masterInfo.username,
+  username: usename,
   password: '',
 })
 
@@ -22,7 +22,6 @@ const handleLogin = async () => {
     processing.value = true
     const res = await login(loginForm.username, loginForm.password)
     localStorage.setItem(ACCESS_TOKEN, res.token)
-    useMasterStore().initMasterInfo()
     message.success('登录成功')
     router.replace('/dashboard')
   }

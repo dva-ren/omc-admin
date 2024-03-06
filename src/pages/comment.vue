@@ -2,7 +2,8 @@
 import type { DataTableColumns } from 'naive-ui'
 import { NAvatar, NSpace } from 'naive-ui'
 // import IpInfo from '~/components/IpInfo.vue'
-import { deleteComment, getRecentlyComments, modifyCommentState } from '~/api'
+import { Trash } from '@vicons/ionicons5'
+import { deleteComment, deleteComments, getRecentlyComments, masterReplyComment, modifyCommentState } from '~/api'
 // import { dateFns, emptyValue } from '~/composables'
 import type { CommentModel } from '~/models'
 import { CommentState } from '~/models'
@@ -12,8 +13,7 @@ import { CommentEvent } from '~/types'
 
 const route = useRoute()
 const router = useRouter()
-const comments = ref<Array<CommentModel>>([])
-const loadding = ref(true)
+const checkedRowKeys = ref<Array<string>>([])
 
 const pagination = reactive({
   page: 1,
@@ -21,36 +21,28 @@ const pagination = reactive({
   showSizePicker: true,
   pageSizes: [15, 20, 50],
   itemCount: 0,
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
   prefix: () => `共${pagination.itemCount}条记录`,
 })
 
 const message = useMessage()
 const state = computed(() => Number(route.query.state) || 0)
 const processing = ref(false)
-
-const getComments = async () => {
-  loadding.value = true
+const { data: comments, refresh, loading } = useAsyncData(async () => {
   const res = await getRecentlyComments({
     page: pagination.page,
     size: pagination.pageSize,
     state: state.value,
   })
-  comments.value = res.data
   pagination.itemCount = res.pagination.total
-  loadding.value = false
-}
-watch(state, () => {
-  pagination.page = 1
-  pagination.pageSize = 15
-  getComments()
-}, { immediate: true })
+
+  return res.data
+})
+const showReplyModal = ref(false)
+const replyForm = reactive({
+  id: '',
+  text: '',
+  name: '',
+})
 
 const rowKey = (row: CommentModel) => row.id
 
@@ -58,7 +50,7 @@ const handleDelete = async (id: string) => {
   processing.value = true
   await deleteComment(id)
   message.success('删除成功')
-  getComments()
+  refresh()
   processing.value = false
 }
 
@@ -72,8 +64,10 @@ const updateStatus = async (comment: CommentModel, state: CommentState) => {
   await modifyCommentState(comment.id, { state })
   message.success('操作成功')
   processing.value = false
-  getComments()
+  refresh()
 }
+
+watch(state, refresh)
 
 const createColumns = (): DataTableColumns<CommentModel> => [
   {
@@ -118,6 +112,9 @@ const createColumns = (): DataTableColumns<CommentModel> => [
         onActive: (e) => {
           switch (e) {
             case CommentEvent.reply:
+              replyForm.id = row.id
+              replyForm.name = row.author
+              showReplyModal.value = true
               break
             case CommentEvent.junk:
               updateStatus(row, CommentState.Junk)
@@ -134,12 +131,48 @@ const createColumns = (): DataTableColumns<CommentModel> => [
     ],
   },
 ]
+
+async function handleDeleteComments() {
+  if (checkedRowKeys.value.length === 0)
+    return
+  await deleteComments(checkedRowKeys.value)
+  message.success('删除成功')
+  refresh()
+}
+
+async function replyFormSubmit() {
+  if (!replyForm.text) {
+    message.warning('请输入回复内容')
+    return false
+  }
+  await masterReplyComment(replyForm.id, {
+    text: replyForm.text,
+  })
+  message.success('回复成功')
+}
+
+function onPageChange(page: number) {
+  pagination.page = page
+  refresh()
+}
+function onPageSizeChange(pageSize: number) {
+  pagination.pageSize = pageSize
+  pagination.page = 1
+  refresh()
+}
 </script>
 
 <template>
   <div>
-    <div pb-4 text-xl font-bold>
-      评论
+    <div pb-4 text-xl font-bold flex justify-between min-h-10>
+      <div>
+        评论
+      </div>
+      <NButton v-if="checkedRowKeys.length" type="error" circle size="large" :loading="loading" :disabled="loading" @click="handleDeleteComments">
+        <template #icon>
+          <n-icon><Trash /></n-icon>
+        </template>
+      </NButton>
     </div>
     <n-tabs
       ref="tabsRef"
@@ -159,15 +192,30 @@ const createColumns = (): DataTableColumns<CommentModel> => [
       </n-tab>
     </n-tabs>
     <n-data-table
+      v-if="comments"
+      v-model:checked-row-keys="checkedRowKeys"
       remote
       size="small"
       :columns="createColumns()"
       :data="comments"
       :pagination="pagination"
       :row-key="rowKey"
-      :loading="loadding"
+      :loading="loading"
+      :on-page-change="onPageChange"
+      :on-page-size-change="onPageSizeChange"
       row-class-name="table-row"
     />
+    <n-modal
+      v-model:show="showReplyModal"
+      preset="dialog"
+      style="width: 600px"
+      :title="`回复${replyForm.name}`"
+      positive-text="回复"
+      negative-text="取消"
+      @positive-click="replyFormSubmit"
+    >
+      <n-input v-model:value="replyForm.text" type="textarea" />
+    </n-modal>
   </div>
 </template>
 
