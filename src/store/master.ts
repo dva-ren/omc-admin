@@ -32,13 +32,13 @@ export const useMasterStore = defineStore('master', () => {
     }
     catch (e: any) {
       if (e.response.status === 400 && location.pathname !== '/init')
-        router.replace('/init')
+        location.replace('/init')
     }
   }
   initMasterInfo()
   function logout() {
     localStorage.removeItem(ACCESS_TOKEN)
-    router.push('/login')
+    location.replace('/login')
   }
   return {
     masterInfo,

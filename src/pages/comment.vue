@@ -201,8 +201,8 @@ function onPageSizeChange(pageSize: number) {
       :pagination="pagination"
       :row-key="rowKey"
       :loading="loading"
-      :on-page-change="onPageChange"
-      :on-page-size-change="onPageSizeChange"
+      :on-update:page="onPageChange"
+      :on-update:page-size-change="onPageSizeChange"
       row-class-name="table-row"
     />
     <n-modal

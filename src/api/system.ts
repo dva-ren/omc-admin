@@ -1,3 +1,4 @@
+import axios from 'axios'
 import http from '~/composables/requests'
 import type { LogModel, LogQueryDto, PaginateResult } from '~/models'
 
@@ -64,4 +65,8 @@ export const clearLogs = (date?: Date | string) => {
       date,
     },
   })
+}
+export const queryIp = async (ip: string) => {
+  const res = axios.get(`https://api.vore.top/api/IPdata?ip=${ip}`)
+  return res
 }

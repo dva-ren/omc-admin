@@ -129,7 +129,7 @@ useAsyncData(async () => {
         登录记录
       </div>
       <div text-gray-5>
-        上次登录IP: {{ masterStore.masterInfo.lastLoginIp }}
+        上次登录IP: <IpInfo inline-block :ip="masterStore.masterInfo.lastLoginIp ?? ''" />
       </div>
       <div text-gray-5>
         上次登录时间: {{ formateDate(masterStore.masterInfo.lastLoginTime) }}

@@ -24,59 +24,35 @@ const pagination = reactive({
   pageSizes: [15, 30, 50],
   pageCount: 1,
   prefix: () => `共${pagination.itemCount}条记录`,
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  },
 })
-const loading = ref(false)
+
 const message = useMessage()
-const logList = ref<Logger[]>([])
 const ips = ref<Array<string>>([])
-const text = ref('')
 const searchIp = ref('')
 const checkedRowKeys = ref<Array<string>>([])
 
-const getLogs = async (pageNum: number, pageSize: number) => {
-  loading.value = true
-  try {
-    const res = await queryLogs({
-      page: pagination.page,
-      size: pagination.pageSize,
-    })
-    pagination.itemCount = res.pagination.total
-    logList.value = res.data.map((log) => {
-      const ua = UaParser(log.ua)
-      return {
-        ...log,
-        browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
-        device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
-        os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
-        cpu: ua.cpu.architecture || '-',
-      }
-    })
-  }
-  finally {
-    loading.value = false
-  }
-}
-
-const getIps = async () => {
-  // const res = await queryIps()
-  // ips.value = res.data
-}
+const { data: logList, loading, refresh } = useAsyncData(async () => {
+  const res = await queryLogs({
+    page: pagination.page,
+    size: pagination.pageSize,
+    ip: searchIp.value === '' ? undefined : searchIp.value,
+  })
+  pagination.itemCount = res.pagination.total
+  return res.data.map((log) => {
+    const ua = UaParser(log.ua)
+    return {
+      ...log,
+      browser: `${ua.browser.name || '-'} ${ua.browser.version || '-'}`,
+      device: `${ua.device.vendor || '-'} ${ua.device.model || '-'} ${ua.device.type || '-'}`,
+      os: `${ua.os.name || '-'} ${ua.os.version || '-'}`,
+      cpu: ua.cpu.architecture || '-',
+    }
+  })
+})
 
 const handleSearch = () => {
   pagination.page = 1
-  text.value = text.value.trim()
-  searchIp.value = text.value
-  if (!searchIp.value)
-    return
-  getLogs(pagination.page, pagination.pageSize)
-  getIps()
+  refresh()
 }
 
 const createColumns = (): DataTableColumns<Logger> => [
@@ -138,14 +114,7 @@ const createColumns = (): DataTableColumns<Logger> => [
     render: row => emptyValue(row.ua),
   },
 ]
-watchEffect(() => {
-  getLogs(pagination.page, pagination.pageSize)
-  getIps()
-})
-const refresh = () => {
-  pagination.page = 1
-  getLogs(pagination.page, pagination.pageSize)
-}
+
 async function handlePositiveClick() {
   await clearLogs()
   message.success('清理成功')
@@ -158,6 +127,16 @@ async function handleDelete() {
   await deleteLogs(checkedRowKeys.value)
   message.success('删除成功')
   checkedRowKeys.value = []
+  refresh()
+}
+
+function onPageChange(page: number) {
+  pagination.page = page
+  refresh()
+}
+function onPageSizeChange(pageSize: number) {
+  pagination.pageSize = pageSize
+  pagination.page = 1
   refresh()
 }
 </script>
@@ -199,7 +178,7 @@ async function handleDelete() {
         </n-popconfirm>
       </div>
       <n-input-group w-80 py-1>
-        <n-input v-model:value="text" :style="{ width: '18rem' }" placeholder="过滤ip" />
+        <n-input v-model:value="searchIp" :style="{ width: '18rem' }" placeholder="过滤ip" />
         <n-button type="primary" ghost @click="handleSearch">
           搜索
         </n-button>
@@ -216,12 +195,15 @@ async function handleDelete() {
       </div>
     </div>
     <n-data-table
+      v-if="logList"
       v-model:checked-row-keys="checkedRowKeys"
       remote
       size="small"
       :columns="createColumns()"
       :data="logList"
       :pagination="pagination"
+      :on-update:page="onPageChange"
+      :on-update:page-size="onPageSizeChange"
       :row-key="(row) => row.id"
       :loading="loading"
       row-class-name="table-row"

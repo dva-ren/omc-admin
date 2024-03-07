@@ -9,6 +9,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     CommentContent: typeof import('./src/components/CommentContent.vue')['default']
     Cropper: typeof import('./src/components/cropper.vue')['default']
+    DataTable: typeof import('./src/components/DataTable.vue')['default']
     IpInfo: typeof import('./src/components/IpInfo.vue')['default']
     Link: typeof import('./src/components/Link.vue')['default']
     MyEditor: typeof import('./src/components/MyEditor.vue')['default']

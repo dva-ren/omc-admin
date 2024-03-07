@@ -9,7 +9,3 @@ export * from './config'
 export * from './image'
 export * from './system'
 export * from './aggregate'
-
-export const queryIpInfo = (ip: string) => {
-  return (`https://api.vore.top/api/IPdata?ip=${ip}`)
-}
