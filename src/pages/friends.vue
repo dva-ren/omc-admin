@@ -35,7 +35,14 @@ const { data: links, loading, refresh } = useAsyncData(() => link.getLinks({
 
 const rowKey = (row: LinkModel) => row.id
 const resetForm = () => {
-  Object.assign(LinkForm, initValue)
+  LinkForm.id = ''
+  LinkForm.name = ''
+  LinkForm.url = ''
+  LinkForm.description = ''
+  LinkForm.avatar = ''
+  LinkForm.email = ''
+  LinkForm.type = undefined
+  LinkForm.state = 0
 }
 const handleDelete = async (id: string) => {
   processing.value = true
@@ -67,6 +74,7 @@ const onPositiveClick = async () => {
           message.success('添加成功')
         }
         showModal.value = false
+        resetForm()
         refresh()
       }
       catch (e: any) {
@@ -98,7 +106,11 @@ const handleEdit = (row: LinkModel) => {
   LinkForm.state = row.state
   showModal.value = true
 }
-
+async function handelPass(row: LinkModel) {
+  await link.approveLink(row.id)
+  message.success('已通过')
+  refresh()
+}
 const createColumns = (): DataTableColumns<LinkModel> => [
   {
     title: '头像',
@@ -167,7 +179,7 @@ const createColumns = (): DataTableColumns<LinkModel> => [
                 secondary: true,
                 size: 'tiny',
                 type: 'primary',
-                onClick: () => handleEdit(row),
+                onClick: () => handelPass(row),
               },
               { default: () => '通过' },
             )
@@ -214,15 +226,19 @@ const rules = {
   },
 }
 const onNegativeClick = () => {
-  // resetForm()
   showModal.value = false
 }
 type KeyType = keyof typeof LinkStateMap
 
 const options = (Object.keys(LinkStateMap)).map(key => ({
   label: LinkStateMap[key as unknown as KeyType],
-  value: key,
+  value: Number(key),
 }))
+
+function handleClickAdd() {
+  resetForm()
+  showModal.value = true
+}
 </script>
 
 <template>
@@ -233,7 +249,7 @@ const options = (Object.keys(LinkStateMap)).map(key => ({
       </div>
       <div>
         <!-- 添加按钮 -->
-        <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="showModal = !showModal">
+        <NButton type="success" circle size="large" :loading="loading" :disabled="loading" @click="handleClickAdd">
           <template #icon>
             <n-icon><Add /></n-icon>
           </template>

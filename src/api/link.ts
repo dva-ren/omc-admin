@@ -54,6 +54,12 @@ export const auditLink = (id: string) => {
   })
 }
 
+export function approveLink(id: string) {
+  return http.request({
+    url: `/links/audit/${id}`,
+    method: 'PATCH',
+  })
+}
 export const link = {
   auditLink,
   checkLinkHealth,
@@ -62,4 +68,5 @@ export const link = {
   deleteLink,
   getAllLinks,
   getLinks,
+  approveLink,
 }
