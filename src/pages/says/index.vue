@@ -39,9 +39,9 @@ const resetForm = () => {
   sayForm.source = ''
   sayForm.author = ''
 }
-const getSays = async (pageNum: number, pageSize: number) => {
+const getSays = async (page: number, size: number) => {
   loadding.value = true
-  const res = await getSayList(pageNum, pageSize)
+  const res = await getSayList(page, size)
   pagination.itemCount = res.pagination.total
   says.value = res.data
   loadding.value = false

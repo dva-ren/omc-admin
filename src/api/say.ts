@@ -10,9 +10,9 @@ export const createSay = (data: CreateSayModel) => {
   })
 }
 
-export const getSayList = (pageNum = 1, pageSize = 20) => {
+export const getSayList = (page = 1, size = 20) => {
   return http.request<PaginateResult<SayModel>>({
-    url: `/say?pageNum=${pageNum}&pageSize=${pageSize}`,
+    url: `/say?pageNum=${page}&size=${size}`,
     method: 'GET',
   })
 }
