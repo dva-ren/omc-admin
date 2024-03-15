@@ -11,7 +11,7 @@ const showModal = ref(false)
 const message = useMessage()
 
 const processing = ref(false)
-
+const modifed = ref(false)
 const initValue: PostDto = {
   title: '',
   text: '',
@@ -69,6 +69,7 @@ const handleAdd = async () => {
     await addPost(form)
     message.success('创建成功')
   }
+  modifed.value = false
   processing.value = false
 }
 
@@ -86,8 +87,8 @@ watch(id, () => {
   }
 }, { immediate: true })
 
-onBeforeRouteLeave((to, from, next) => {
-  if (postForm.value.text) {
+onBeforeRouteUpdate((to, from, next) => {
+  if (modifed.value && postForm.value.text) {
     if (!window.confirm('当前内容可能还未保存，是否离开'))
       return
   }
@@ -96,7 +97,7 @@ onBeforeRouteLeave((to, from, next) => {
 
 onMounted(() => {
   window.onbeforeunload = (e) => {
-    if (postForm.value.text)
+    if (modifed.value && postForm.value.text)
       e.returnValue = '当前内容可能还未保存，是否离开'
   }
 })
@@ -150,6 +151,7 @@ onBeforeUnmount(() => {
         placeholder="内容"
         show-count
         h-60vh
+        @input="modifed = true"
       />
     </n-space>
     <n-drawer v-model:show="active" width="100%" style="max-width: 480px;">

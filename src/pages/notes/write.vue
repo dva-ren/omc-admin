@@ -14,7 +14,7 @@ const showModal = ref(false)
 const message = useMessage()
 const formInstRef = ref(null)
 const processing = ref(false)
-
+const modifed = ref(false)
 const initValue: NoteCreateModel = {
   nid: 0,
   title: '',
@@ -57,6 +57,7 @@ const getNotes = async () => {
     show.value = false
   }
 }
+
 const weatherOptions = [
   {
     label: '晴',
@@ -191,6 +192,7 @@ const handleAdd = async () => {
       await addNote(noteForm.value)
       message.success('添加成功')
     }
+    modifed.value = false
   }
   catch (e) {}
   finally {
@@ -212,11 +214,11 @@ watch(id, () => {
   if (id.value)
     getNotes()
   else
-    noteForm.value = initValue
+    Object.assign(noteForm.value, initValue)
 }, { immediate: true })
 
-onBeforeRouteLeave((to, from, next) => {
-  if (noteForm.value.text) {
+onBeforeRouteUpdate((to, from, next) => {
+  if (modifed.value && noteForm.value.text) {
     if (!window.confirm('当前内容可能还未保存，是否离开'))
       return
   }
@@ -225,7 +227,7 @@ onBeforeRouteLeave((to, from, next) => {
 
 onMounted(() => {
   window.onbeforeunload = (e) => {
-    if (noteForm.value.text)
+    if (modifed.value && noteForm.value.text)
       e.returnValue = '当前内容可能还未保存，是否离开'
   }
 })
@@ -271,6 +273,7 @@ onBeforeUnmount(() => {
         placeholder="内容"
         show-count
         h-60vh
+        @input="modifed = true"
       />
     </n-space>
     <n-drawer v-model:show="active" width="100%" style="max-width: 480px;">
