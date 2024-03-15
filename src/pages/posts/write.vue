@@ -21,7 +21,6 @@ const initValue: PostDto = {
   pinOrder: 0,
   allowComment: true,
   copyright: true,
-  images: [],
   slug: '',
 }
 const pinTime = ref('')
@@ -38,6 +37,7 @@ const queryPost = async () => {
         res.pin = 'true'
       }
     }
+    delete res.images
     Object.assign(postForm.value, res)
     show.value = false
   }

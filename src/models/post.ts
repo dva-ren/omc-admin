@@ -16,7 +16,7 @@ export interface PostModel {
   title: string
   slug: string
   categoryId: string
-  images: Image[]
+  images?: Image[]
   modified: string
   created: string
   category: Category
