@@ -38,6 +38,12 @@ dependencies:
   md-editor-v3:
     specifier: ^2.7.2
     version: 2.7.2
+  monaco-editor:
+    specifier: ^0.47.0
+    version: 0.47.0
+  monaco-editor-core:
+    specifier: ^0.47.0
+    version: 0.47.0
   nprogress:
     specifier: ^0.2.0
     version: registry.npmmirror.com/nprogress@0.2.0
@@ -4584,6 +4590,14 @@ packages:
       pkg-types: 1.0.1
       ufo: 1.0.0
     dev: true
+
+  /monaco-editor-core@0.47.0:
+    resolution: {integrity: sha512-xho7dsmSYOIek6bkMKQApWHVyoOBQ1eaBIE6CIlER40paTN0r0efrig6Q9QkCacfzIuNNxNjyb1uMVoMpi8gcA==}
+    dev: false
+
+  /monaco-editor@0.47.0:
+    resolution: {integrity: sha512-VabVvHvQ9QmMwXu4du008ZDuyLnHs9j7ThVFsiJoXSOQk18+LF89N4ADzPbFenm0W4V2bGHnFBztIRQTgBfxzw==}
+    dev: false
 
   /mrmime@1.0.1:
     resolution: {integrity: sha512-hzzEagAgDyoU1Q6yg5uI+AorQgdvMCur3FcKf7NhMKWsaYg+RnbTyHRa/9IlLF9rf455MOCtcqqrQQ83pPP7Uw==}

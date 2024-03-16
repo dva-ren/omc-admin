@@ -23,6 +23,8 @@
     "dayjs": "^1.11.7",
     "laf-client-sdk": "^0.8.13",
     "md-editor-v3": "^2.7.2",
+    "monaco-editor": "^0.47.0",
+    "monaco-editor-core": "^0.47.0",
     "nprogress": "^0.2.0",
     "pinia": "^2.0.28",
     "ua-parser-js": "^1.0.33",

@@ -12,6 +12,7 @@ declare module '@vue/runtime-core' {
     DataTable: typeof import('./src/components/DataTable.vue')['default']
     IpInfo: typeof import('./src/components/IpInfo.vue')['default']
     Link: typeof import('./src/components/Link.vue')['default']
+    MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     MyEditor: typeof import('./src/components/MyEditor.vue')['default']
     NBadge: typeof import('naive-ui')['NBadge']
     NButton: typeof import('naive-ui')['NButton']

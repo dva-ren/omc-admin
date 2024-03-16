@@ -7,19 +7,28 @@ const previewKey = reactive({
   key: '',
   value: '',
 })
+const initValue = ref('')
 const isAdd = ref(false)
+const editorOptions = {
+  language: 'json',
+  theme: 'vs',
+}
 
 const { data, refresh } = useAsyncData(async () => {
   const res = await getKeys()
   const key = Object.keys(res)[0]
   previewKey.key = key
   previewKey.value = JSON.stringify(res[key])
+  initValue.value = previewKey.value
   return res
 })
-
+function handleValueChange(v: string) {
+  previewKey.value = v
+}
 function onKeyClick(key: string, value: any) {
   previewKey.key = key
   previewKey.value = JSON.stringify(value)
+  initValue.value = previewKey.value
 }
 
 async function onSave() {
@@ -39,12 +48,14 @@ function handleClickAdd() {
   isAdd.value = true
   previewKey.key = ''
   previewKey.value = ''
+  initValue.value = ''
 }
 
 function handleOnBlur() {
   if (previewKey.key !== '') {
     data.value![previewKey.key] = {}
     previewKey.value = ''
+    initValue.value = ''
   }
   isAdd.value = false
 }
@@ -72,7 +83,7 @@ async function handleDelete(key: string) {
           class="py-1 px-2 border rounded cursor-pointer flex items-center group justify-between"
           :class="{ 'bg-blue-50': previewKey.key === k }"
         >
-          <div @click="onKeyClick(k, v)">
+          <div select-none @click="onKeyClick(k, v)">
             {{ k }}
           </div>
           <n-popconfirm
@@ -91,7 +102,9 @@ async function handleDelete(key: string) {
           <n-input v-if="isAdd" v-model:value="previewKey.key" size="small" @blur="handleOnBlur" />
         </n-space>
       </div>
-      <n-input v-model:value="previewKey.value" type="textarea" />
+      <div w-full h-60vh>
+        <monaco-editor ref="editor" :initial-value="initValue" :config="editorOptions" :on-change="handleValueChange" />
+      </div>
     </div>
   </div>
 </template>
