@@ -94,7 +94,7 @@ const createColumns = (): DataTableColumns<PostModel> => [
     title: '置顶',
     key: 'pin',
     width: 100,
-    render: row => row.pin,
+    render: row => row.pin ? formateDate(row.pin) : '-',
   },
   {
     title: '创建于',

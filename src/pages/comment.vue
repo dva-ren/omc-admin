@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { DataTableColumns } from 'naive-ui'
 import { NAvatar, NSpace } from 'naive-ui'
-// import IpInfo from '~/components/IpInfo.vue'
+import IpInfo from '~/components/IpInfo.vue'
 import { Trash } from '@vicons/ionicons5'
 import { deleteComment, deleteComments, getRecentlyComments, masterReplyComment, modifyCommentState } from '~/api'
 // import { dateFns, emptyValue } from '~/composables'
@@ -95,10 +95,11 @@ const createColumns = (): DataTableColumns<CommentModel> => [
             to: `mailto:${row.mail}`,
             text: row.mail,
           }),
-          h('span',
+          h(IpInfo,
             {
               className: 'ml-1 text-gray-500',
-            }, { default: () => row.ip }),
+              ip: row.ip,
+            }),
         ],
       }),
     ],

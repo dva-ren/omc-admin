@@ -14,7 +14,11 @@ const masterStore = useMasterStore()
 
 <template>
   <div>
-    <div>9天前 于 <Link target="_blank" :to="joinUrl(masterStore.masterInfo.url, `${props.comment.refType}/${props.comment.ref.id}`)" :text="props.comment.ref.title" /></div>
+    <div>
+      <span>{{ dateFns(props.comment.created).fromNow() }}</span>
+      <span mx-1>于</span>
+      <Link target="_blank" :to="joinUrl(masterStore.masterInfo.url, `${props.comment.refType}/${props.comment.ref.id}`)" :text="props.comment.ref.title" />
+    </div>
     <div my-1>
       {{ props.comment.text }}
     </div>
